@@ -993,7 +993,17 @@ function setShareLink() {
   a.href = `https://x.com/intent/post?text=${encodeURIComponent(text)}`;
   if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) a.target = '_blank'; else a.removeAttribute('target');
 }
-$('#share').addEventListener('click', () => { track('share', { presses, amount, tier: tier.id, channel: 'x' }); });
+$('#share').addEventListener('click', async e => {
+  track('share', { presses, amount, tier: tier.id, channel: 'x' });
+  // phones: hand X the badge image itself (share sheet -> X). The post opens with the picture attached.
+  if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || !scoreBlob) return;
+  const url = `https://redbutton.emilylai.com/s/${tier.id}/`;
+  const file = new File([scoreBlob], `do-not-press-${tier.id}.png`, { type: 'image/png' });
+  if (!(navigator.canShare && navigator.canShare({ files: [file] }))) return;
+  e.preventDefault();
+  try { await navigator.share({ files: [file], text: `I clicked a red button ${presses} times.\nTry clicking: ${url}` }); }
+  catch (err) { if (!err || err.name !== 'AbortError') location.href = $('#share').href; }
+});
 $('#saveCard').addEventListener('click', async e => {
   e.preventDefault(); if (!scoreBlob) return;
   track('save_badge', { tier: tier.id });
