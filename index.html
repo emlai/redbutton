@@ -56,7 +56,10 @@
   #line { position:absolute; left:0; right:0; top:78%; text-align:center; padding:0 24px;
     font-weight:900; font-size:clamp(20px,5.4vw,34px); line-height:1.18; letter-spacing:0; word-spacing:.04em; transition:transform .5s cubic-bezier(.2,.9,.3,1.3), font-size .3s; min-height:1.2em; }
   #line.upside { transform:rotate(180deg); }
-  #line.yay { font-size:clamp(44px,13vw,80px); color:var(--red); animation:yay .5s cubic-bezier(.2,.9,.3,1.6); }
+  #line.yay { font-size:clamp(44px,13vw,80px); animation:yay .5s cubic-bezier(.2,.9,.3,1.6); }
+  #line .rb { display:inline-block; color:transparent; background:linear-gradient(90deg,#ff5c8a,#ff9f43,#ffd23f,#3bceac,#4d9fff,#b388ff,#ff5c8a,#ff9f43,#ffd23f,#3bceac,#4d9fff,#b388ff,#ff5c8a); background-size:200% 100%;
+    -webkit-background-clip:text; background-clip:text; animation:rainbow 1.6s linear infinite; padding:0 .04em; }
+  @keyframes rainbow { to { background-position:-200% 0; } }
   @keyframes yay { from { transform:scale(.3) rotate(-8deg); opacity:0; } to { transform:none; opacity:1; } }
   #line.tiny { font-size:9px; letter-spacing:0; font-weight:500; }
   #sub { display:none !important; position:absolute; left:0; right:0; top:calc(73svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
@@ -727,7 +730,6 @@ function placeDot() {
     const de = lineEl.querySelector('.de'), bl = lineEl.querySelector('.bl');
     const g = $('#game').getBoundingClientRect(), r = de.getBoundingClientRect(), base = bl.getBoundingClientRect().bottom, fs = parseFloat(getComputedStyle(lineEl).fontSize);
     const q = de.textContent === '?';
-    dotEl.classList.add('glide');
     dotEl.style.left = (r.left - g.left + r.width * (q ? .5 : .5)) + 'px';
     dotEl.style.top = (base - g.top - fs * (q ? .1 : .1)) + 'px';
     dotEl.style.setProperty('--d', Math.max(6, Math.round(fs * (q ? .26 : .22))) + 'px');
@@ -859,7 +861,7 @@ function finish() {
   track('found_button', { presses, fears: fears.size, amount, method, use: useCase });
   const db = dotEl.getBoundingClientRect();
   dotEl.style.display = 'none'; SFX.yay(); confetti(db.left + db.width / 2, db.top + db.height / 2, 220);
-  lineEl.className = 'yay'; lineEl.textContent = 'yay.'; subEl.textContent = ''; headEl.style.opacity = 0;
+  lineEl.className = 'yay'; lineEl.innerHTML = '<span class="rb">yay.</span>'; subEl.textContent = ''; headEl.style.opacity = 0;
   clearButtons();
   const b = makeButton(); b.s = .1; b.ts = 1.2; b.press = 1;
   setTimeout(() => { SFX.found(); lineEl.textContent = ''; subEl.textContent = ''; lineEl.className = ''; b.ts = 9 / view.big; }, 1150);
