@@ -4,10 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>do not press</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
 <meta name="description" content="Depositing money into an app is scary. Do not press the button.">
 <meta property="og:title" content="do not press">
 <meta property="og:description" content="Depositing money into an app is scary.">
 <meta property="og:image" content="https://redbutton.emilylai.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:video" content="https://redbutton.emilylai.com/og.mp4">
+<meta property="og:video:secure_url" content="https://redbutton.emilylai.com/og.mp4">
+<meta property="og:video:type" content="video/mp4">
+<meta property="og:video:width" content="1200">
+<meta property="og:video:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="do not press">
@@ -41,6 +53,8 @@
   #line { position:absolute; left:0; right:0; top:73svh; text-align:center; padding:0 24px;
     font-weight:900; font-size:clamp(20px,5.4vw,34px); line-height:1.18; letter-spacing:0; word-spacing:.04em; transition:transform .5s cubic-bezier(.2,.9,.3,1.3), font-size .3s; min-height:1.2em; }
   #line.upside { transform:rotate(180deg); }
+  #line.yay { font-size:clamp(44px,13vw,80px); color:var(--red); animation:yay .5s cubic-bezier(.2,.9,.3,1.6); }
+  @keyframes yay { from { transform:scale(.3) rotate(-8deg); opacity:0; } to { transform:none; opacity:1; } }
   #line.tiny { font-size:9px; letter-spacing:0; font-weight:500; }
   #sub { position:absolute; left:0; right:0; top:calc(73svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
   #dot { position:absolute; width:44px; height:44px; transform:translate(-50%,-50%); display:none; cursor:pointer; border:0; background:none; padding:0; }
@@ -83,13 +97,18 @@
   .def { margin:36px 0 0; padding:22px 20px; border-radius:16px; background:#111; color:#fff; }
   .def h2 { margin:0; font-weight:900; font-size:clamp(22px,5.4vw,30px); letter-spacing:0; line-height:1.12; }
   .def p { margin:10px 0 0; font-weight:500; font-size:16px; line-height:1.5; color:#d8d6d0; }
-  .depositNow { margin-top:18px; border:0; background:var(--red); color:#fff; font-weight:900; font-size:18px; padding:15px 26px; border-radius:999px; cursor:pointer;
-    box-shadow:0 6px 0 #8d0703, 0 12px 24px -8px rgba(216,19,10,.6); transition:transform .08s, box-shadow .08s; }
-  .depositNow:active { transform:translateY(5px); box-shadow:0 1px 0 #8d0703, 0 6px 14px -8px rgba(216,19,10,.6); }
+  .def { text-align:center; }
+  .depositNow { display:block; margin:22px auto 0; border:0; background:none; padding:0; color:#fff; cursor:pointer; touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+  .depositNow img { display:block; width:min(220px, 56vw); height:auto; margin:0 auto; transition:transform .09s ease-out, filter .09s; -webkit-user-drag:none; }
+  .depositNow span { display:block; margin-top:8px; font-weight:900; font-size:clamp(18px,4.8vw,22px); }
+  .depositNow:active img, .depositNow.down img { transform:translateY(6px) scale(.97); filter:brightness(.92); }
   .started { display:none; margin:18px 0 0 !important; font-weight:900 !important; font-size:clamp(28px,7vw,40px) !important; letter-spacing:-.02em; color:#fff !important; line-height:1.1 !important; }
+  .started .word { color:#ff2d20; background:none; padding:0; }
   .started.show { display:block; }
   .word { display:inline-block; color:var(--red); background:#fff; padding:0 10px; border-radius:8px; transition:transform .25s cubic-bezier(.2,.9,.3,1.4), opacity .2s; }
-  .word.swap { transform:translateY(-40%) rotateX(70deg); opacity:0; }
+  .word.swap { transform:translateY(-45%) rotateX(75deg); opacity:0; }
+  .word.in { animation:wordIn .32s cubic-bezier(.2,.9,.3,1.4); }
+  @keyframes wordIn { from { transform:translateY(45%) rotateX(-75deg); opacity:0; } to { transform:none; opacity:1; } }
   #confetti { position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:30; }
   .again { margin-top:26px; border:1px solid #ddd; background:#fff; color:#111; font-weight:700; font-size:15px; padding:11px 20px; border-radius:999px; cursor:pointer; }
   .stats { margin:14px 0 0; font-weight:500; font-size:14px; color:var(--muted); }
@@ -131,6 +150,7 @@
   <button id="dot" aria-label="a tiny button"></button>
 </section>
 <div id="flash"></div>
+<canvas id="confetti"></canvas>
 
 <section id="end" aria-live="polite">
   <h1>Depositing money <em>shouldn't</em> be scary.</h1>
@@ -143,10 +163,9 @@
   <div class="def">
     <h2>That's what unified deposits are for.</h2>
     <p>It just works.</p>
-    <button class="depositNow" id="depositNow">Deposit money</button>
+    <button class="depositNow" id="depositNow" aria-label="Deposit money"><img src="button.png" alt="" width="220" height="170"><span>Deposit money</span></button>
     <p class="started" id="started" aria-live="polite">Start <span class="word" id="word">trading</span></p>
   </div>
-  <canvas id="confetti"></canvas>
 
   <button class="again" id="again">start over</button>
   <p class="stats" id="stats"></p>
@@ -342,7 +361,7 @@ gl = initGL();
 if (!gl) document.body.classList.add('nogl');
 
 function makeButton() {
-  const b = { x:0, z:0, tx:0, tz:0, s:1, ts:1, grey:0, tgrey:0, press:0, shake:0, label:'', lock:false, alive:true };
+  const b = { x:0, z:0, tx:0, tz:0, s:1, ts:1, vx:0, vz:0, vs:0, pop:0, phase:Math.random() * 6.28, grey:0, tgrey:0, press:0, shake:0, label:'', lock:false, alive:true };
   if (gl) {
     b.g = new THREE.Group();
     b.mat = new THREE.MeshPhysicalMaterial({ color: 0xd8130a, roughness: .32, metalness: 0, clearcoat: 1, clearcoatRoughness: .04, sheen: .15, sheenColor: new THREE.Color(0xff3322), emissive: 0x1c0000 });
@@ -404,6 +423,13 @@ function layout(fx) {
   b.tgrey = fx === 'grey' ? 1 : 0;
   setLock(b, fx === 'lock');
   if (['single','shudder','grey','lock','dodge','nudge','fade','pulse','blink'].includes(fx)) { b.tx = 0; b.tz = 0; b.ts = 1; }
+  // plain steps: the button never sits still. it hops somewhere new, a bit bigger or smaller.
+  if (fx === 'single' && step > 0) {
+    const rx = Math.min(view.halfW * .34, 3.2), rz = view.halfH * .16;
+    let nx; do { nx = (Math.random() * 2 - 1) * rx; } while (Math.abs(nx - b.x) < rx * .45);
+    b.tx = nx; b.tz = (Math.random() * 2 - 1) * rz; b.ts = view.narrow ? .62 + Math.random() * .3 : .8 + Math.random() * .3;
+  }
+  if (fx === 'grey' || fx === 'lock') b.ts = view.narrow ? .8 : 1;
   if (fx === 'shrink1') b.ts = .62;
   if (fx === 'shrink2') b.ts = .34;
   if (fx === 'dot') b.ts = .08;
@@ -414,8 +440,8 @@ function layout(fx) {
   if (fx === 'pulse') b.shake = .45;
   if (fx === 'nudge') { b.tz = -view.halfH * .22; b.ts = .9; }
   if (fx === 'fade') { b.ts = .55; b.tgrey = .55; }
-  if (fx === 'left')  { b.tx = -view.halfW * .48; b.ts = 1; }
-  if (fx === 'right') { b.tx =  view.halfW * .48; b.ts = 1; }
+  if (fx === 'left')  { b.ts = view.narrow ? .5 : 1; b.tx = -view.halfW * (view.narrow ? .55 : .48); }
+  if (fx === 'right') { b.ts = view.narrow ? .5 : 1; b.tx =  view.halfW * (view.narrow ? .55 : .48); }
   if (fx === 'blink') { b.ts = .55; setTimeout(() => { b.ts = 1; }, 160); }
 }
 
@@ -447,16 +473,23 @@ function frame(now) {
   for (const b of buttons) {
     const m = solo ? view.big : (view.narrow && buttons.length === 4 ? 1.15 : 1);
     const clamp = buttons.length <= 4;
-    const lim = Math.max(0, view.halfW - 1.42 * b.ts * m), limZ = Math.max(0, view.halfH * .62 - .9 * b.ts * m);
+    const lim = Math.max(0, view.halfW - 1.6 * b.ts * m), limZ = Math.max(0, view.halfH * .62 - .9 * b.ts * m);
     if (clamp) { b.tx = Math.max(-lim, Math.min(lim, b.tx)); b.tz = Math.max(-limZ, Math.min(limZ, b.tz)); }
-    b.x += (b.tx - b.x) * k; b.z += (b.tz - b.z) * k; b.s += (b.ts - b.s) * k * 1.1; b.grey += (b.tgrey - b.grey) * k;
+    // springs (a little overshoot so every move feels bouncy)
+    const sdt = Math.min(dt, .033);
+    b.vx += ((b.tx - b.x) * 170 - b.vx * 15) * sdt; b.x += b.vx * sdt;
+    b.vz += ((b.tz - b.z) * 170 - b.vz * 15) * sdt; b.z += b.vz * sdt;
+    b.vs += ((b.ts - b.s) * 210 - b.vs * 13) * sdt; b.s += b.vs * sdt;
+    b.grey += (b.tgrey - b.grey) * k; b.pop = Math.max(0, b.pop - dt * 3.2);
     b.press = Math.max(0, b.press - dt * 4.5);
     b.shake = Math.max(0, b.shake - dt * 1.8);
     const sx = b.shake ? Math.sin(now / 22) * .22 * b.shake : 0;
     const pressY = -Math.sin(Math.min(1, b.press) * Math.PI) * .2;
-    const es = b.s * m;
+    const bob = 1 + Math.sin(now / 520 + b.phase) * .018 + Math.sin(b.pop * Math.PI) * .1;
+    const es = Math.max(.001, b.s) * m * bob;
     if (gl) {
-      b.g.position.set(b.x + sx, 0, b.z); b.g.scale.setScalar(Math.max(.001, es));
+      b.g.position.set(b.x + sx, 0, b.z + Math.sin(now / 700 + b.phase) * .05);
+      b.g.rotation.z = Math.sin(now / 900 + b.phase) * .03 + sx * .15; b.g.scale.setScalar(Math.max(.001, es));
       b.cap.position.y = pressY;
       b.mat.color.setRGB(.74 - .2 * b.grey, .02 + .52 * b.grey, .015 + .53 * b.grey, THREE.SRGBColorSpace);
       b.mat.roughness = .32 + .2 * b.grey;
@@ -509,7 +542,20 @@ function buzz(pattern) {
   for (let i = 0; i < n; i++) setTimeout(() => { try { hapEl.click(); } catch (e) {} }, i * 90);
 }
 const SFX = {
-  press(n) { const up = Math.min(n, 40) * 4; tone('sine', 190 + up + Math.random() * 30, 60, .12, .9); noise(.025, .5, 3200); buzz(12); },
+  press(n) {
+    // plastic click on the way down, a soft thump, a lighter clack on release, and a tiny note that climbs a scale as you keep pressing.
+    const v = .92 + Math.random() * .16;
+    noise(.012, .9, 5200 * v); tone('triangle', 165 * v, 70, .07, .7); noise(.03, .25, 900);
+    noise(.01, .45, 7000 * v, .075); tone('square', 900 * v, 700, .02, .06, .075);
+    const scale = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24], st = scale[n % scale.length] + 12 * (Math.floor(n / scale.length) % 2);
+    tone('sine', 523 * Math.pow(2, st / 12), 523 * Math.pow(2, st / 12), .14, .12, .02);
+    buzz(12);
+  },
+  yay() {
+    [0, 4, 7, 12, 16].forEach((st, i) => { const f = 523 * Math.pow(2, st / 12); tone('triangle', f, f, .22, .3, i * .07); tone('sine', f * 2, f * 2, .18, .08, i * .07); });
+    for (let i = 0; i < 10; i++) noise(.025, .45, 3000 + Math.random() * 3000, .04 + i * .05);
+    tone('sine', 400, 1200, .35, .25, .4); buzz([20, 40, 20, 40, 20, 40, 60]);
+  },
   nope() { tone('square', 140, 90, .16, .22); tone('square', 104, 70, .2, .18, .07); buzz([25, 50, 25]); },
   declined() { tone('sawtooth', 220, 180, .14, .16); tone('sawtooth', 165, 120, .22, .16, .15); buzz([40, 60, 40]); },
   pick() { tone('triangle', 520, 520, .08, .35); tone('triangle', 780, 780, .1, .3, .06); buzz(10); },
@@ -561,7 +607,7 @@ function onPress(b) {
   if (ended || waiting) return;
   presses++; lifetime++; try { localStorage.setItem('dnp_presses', lifetime); } catch (e) {}
   if (presses === 1) track('game_start');
-  b.press = 1;
+  b.press = 1; b.pop = 1;
   const S = STEPS[step];
   if (['split3','method3','use4','chain4'].includes(S.fx)) SFX.pick(); else SFX.press(presses);
   if (S.fx === 'split3') { amount = b.value; track('pick_amount', { amount: b.value }); }
@@ -607,13 +653,15 @@ dotEl.addEventListener('pointerdown', ev => { ev.preventDefault(); if (!ended) f
 function finish() {
   ended = true; presses++;
   track('found_button', { presses, fears: fears.size, amount, method, use: useCase });
-  dotEl.style.display = 'none'; SFX.found(); setTimeout(SFX.boom, 850);
-  lineEl.textContent = ''; subEl.textContent = ''; headEl.style.opacity = 0; lineEl.className = '';
+  const db = dotEl.getBoundingClientRect();
+  dotEl.style.display = 'none'; SFX.yay(); confetti(db.left + db.width / 2, db.top + db.height / 2, 220);
+  lineEl.className = 'yay'; lineEl.textContent = 'yay.'; subEl.textContent = ''; headEl.style.opacity = 0;
   clearButtons();
   const b = makeButton(); b.s = .1; b.ts = 1.2; b.press = 1;
-  setTimeout(() => { b.ts = 9; }, 380);
-  setTimeout(() => { $('#flash').style.opacity = 1; }, 900);
-  setTimeout(() => { document.body.classList.remove('playing'); buildEnd(); $('#game').style.display = 'none'; $('#end').classList.add('show'); window.scrollTo(0, 0); $('#flash').style.opacity = 0; animateEnd(); }, 1550);
+  setTimeout(() => { SFX.found(); lineEl.textContent = ''; subEl.textContent = ''; lineEl.className = ''; b.ts = 9 / view.big; }, 1150);
+  setTimeout(SFX.boom, 1600);
+  setTimeout(() => { $('#flash').style.opacity = 1; }, 1700);
+  setTimeout(() => { document.body.classList.remove('playing'); buildEnd(); $('#game').style.display = 'none'; $('#end').classList.add('show'); window.scrollTo(0, 0); $('#flash').style.opacity = 0; animateEnd(); }, 2350);
 }
 function buildEnd() {
   const path = PATHS[method] || PATHS.card;
@@ -644,23 +692,26 @@ $('#depositNow').addEventListener('click', () => {
   track('deposit_click', { amount, method, use: useCase });
   confetti(); SFX.party();
   const btn = $('#depositNow'), started = $('#started'), word = $('#word');
-  btn.style.display = 'none'; started.classList.add('show');
+  btn.classList.add('down'); setTimeout(() => btn.classList.remove('down'), 140);
+  started.classList.add('show');
   const list = ['trading', 'playing', 'investing'];
   let i = Math.max(0, list.indexOf(WORDS[useCase] || 'trading'));
   word.textContent = list[i];
   clearInterval(wordTimer);
   wordTimer = setInterval(() => {
     word.classList.add('swap');
-    setTimeout(() => { i = (i + 1) % list.length; word.textContent = list[i]; word.classList.remove('swap'); }, 220);
+    setTimeout(() => { i = (i + 1) % list.length; word.textContent = list[i]; word.classList.remove('swap'); word.classList.remove('in'); void word.offsetWidth; word.classList.add('in'); }, 220);
   }, 1300);
 });
-function confetti() {
+let confettiRun = 0;
+function confetti(ox, oy, n = 180) {
+  const run = ++confettiRun;
   const c = $('#confetti'), x = c.getContext('2d'), dpr = Math.min(devicePixelRatio, 2);
   c.width = innerWidth * dpr; c.height = innerHeight * dpr; x.scale(dpr, dpr);
   const colors = ['#d8130a', '#111111', '#ffffff', '#ffb3ab', '#f2c94c'];
-  const origin = $('#started').getBoundingClientRect();
-  const P = Array.from({ length: 180 }, () => ({
-    x: innerWidth / 2 + (Math.random() - .5) * 80, y: Math.min(innerHeight * .7, origin.top || innerHeight * .6),
+  if (ox == null) { const ob = $('#depositNow').getBoundingClientRect(); ox = ob.left + ob.width / 2 || innerWidth / 2; oy = ob.top + ob.height * .35 || innerHeight * .6; }
+  const P = Array.from({ length: n }, () => ({
+    x: ox + (Math.random() - .5) * 80, y: Math.min(innerHeight * .8, oy),
     vx: (Math.random() - .5) * 13, vy: -Math.random() * 15 - 6, r: Math.random() * Math.PI, vr: (Math.random() - .5) * .35,
     w: 6 + Math.random() * 7, h: 3 + Math.random() * 5, c: colors[(Math.random() * colors.length) | 0]
   }));
@@ -673,6 +724,7 @@ function confetti() {
       if (p.c === '#ffffff') { x.strokeStyle = '#ddd'; x.lineWidth = .5; x.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h); }
       x.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); x.restore();
     }
+    if (run !== confettiRun) return;
     if (t < 3.2) requestAnimationFrame(tick); else x.clearRect(0, 0, innerWidth, innerHeight);
   })(t0);
 }
