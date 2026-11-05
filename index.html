@@ -129,7 +129,7 @@
   #confetti { position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:30; }
   .endbtns { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; justify-content:center; }
   .endbtns .again { margin-top:0; }
-  .share { border:0; background:#111; color:#fff; font-weight:700; font-size:16px; padding:12px 22px; border-radius:999px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+  .share { border:0; text-decoration:none; background:#111; color:#fff; font-weight:700; font-size:16px; padding:12px 22px; border-radius:999px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
   .share .xlogo { width:17px; height:17px; display:block; }
   .savecard { text-align:center; margin:12px 0 0; font-size:14px; }
   .savecard a { color:#6b6873; text-decoration:underline; text-underline-offset:3px; }
@@ -179,7 +179,7 @@
 <section id="end" aria-live="polite">
   <h1>Depositing money <em>shouldn't</em> be scary.</h1>
   <div class="scorewrap"><img id="scoreImg" alt="your score card"></div>
-  <div class="endbtns"><button class="share" id="share">Share on <svg class="xlogo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></button><button class="again" id="again">play again</button></div>
+  <div class="endbtns"><a class="share" id="share" href="https://x.com/intent/post" rel="noopener">Share on <svg class="xlogo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a><button class="again" id="again">play again</button></div>
   <p class="savecard"><a href="#" id="saveCard">save your badge</a></p>
   <p class="copied" id="copied" aria-live="polite"></p>
 
@@ -331,9 +331,9 @@ const PATHS = {
   crypto: { button:'one tap', routing:'takes the token you have, not the one it wanted', sources:'your exchange or wallet', connect:'one deposit address', rails:'a stablecoin transfer', risk:'one wallet screening', convert:'any chain you sent from, handled', settle:'USDC', app:'ready to use' }
 };
 const AMOUNT_TAKES = { '$50':'$50. testing the waters?', '$500':'$500. you sure? too late.', '$5,000':'$5,000 on first deposit? woah.' };
-const WANTED = { 'gamble':'gamble', 'buy stocks':'buy stocks', 'trade predictions':'trade', 'rip packs':'rip some packs' };
+const WANTED = { 'bet on sports':'bet on sports', 'buy stocks':'buy stocks', 'trade predictions':'trade', 'rip packs':'rip some packs' };
 const HACKS = ['fake login pages. wallet drainers.', 'fake support DMs.', 'social engineering deepfakes.'];
-const USES = { 'gamble':'a bet', 'buy stocks':'stocks', 'trade predictions':'a prediction market', 'rip packs':'card packs' };
+const USES = { 'bet on sports':'a sports bet', 'buy stocks':'stocks', 'trade predictions':'a prediction market', 'rip packs':'card packs' };
 
 /* =========================================================================
    STATE
@@ -477,7 +477,7 @@ function layout(fx) {
     return;
   }
   if (fx === 'use4' || fx === 'chain4') {
-    const labels = fx === 'use4' ? ['gamble', 'buy stocks', 'trade predictions', 'rip packs'] : ['ethereum', 'base', 'arbitrum', "i'm confused"];
+    const labels = fx === 'use4' ? ['bet on sports', 'buy stocks', 'trade predictions', 'rip packs'] : ['ethereum', 'base', 'arbitrum', "i'm confused"];
     const wide = view.halfW > 4.6;
     labels.forEach((t, i) => {
       const b = makeButton();
@@ -520,9 +520,11 @@ function layout(fx) {
   setLock(b, fx === 'lock');
   if (['single','shudder','grey','lock','dodge','nudge','fade','pulse','blink'].includes(fx)) { b.tx = 0; b.tz = 0; b.ts = 1; }
   // plain steps: the button never sits still. it hops somewhere new, a bit bigger or smaller.
-  if (fx === 'single' && step > 0) {
-    b.tx = 0; b.tz = 0; b.ts = view.narrow ? .72 + Math.random() * .22 : .85 + Math.random() * .2; b.pop = 1;
-  }
+  if (fx === 'single' && step > 2) {
+    const rx = Math.min(view.halfW * .3, 3), rz = view.halfH * .16;
+    let nx; do { nx = (Math.random() * 2 - 1) * rx; } while (Math.abs(nx - b.x) < rx * .5);
+    b.tx = nx; b.tz = (Math.random() * 2 - 1) * rz; b.ts = view.narrow ? .62 + Math.random() * .28 : .8 + Math.random() * .25; b.pop = 1;
+  } else if (fx === 'single' && step > 0) { b.tx = 0; b.tz = 0; b.ts = view.narrow ? .8 : .95; b.pop = 1; }
   if (fx === 'grey' || fx === 'lock') b.ts = view.narrow ? .8 : 1;
   if (fx === 'sleep') { b.tx = 0; b.tz = view.halfH * .1; b.ts = view.narrow ? .62 : .8; b.tgrey = .6; b.sleepy = true; } else b.sleepy = false;
   if (fx === 'shrink1') b.ts = .62;
@@ -818,12 +820,10 @@ function onPress(b) {
   }
   if (S.fx === 'dodge' && dodges < 3) {
     dodges++;
-    const lines = ['nope.', 'almost.', 'fine.'];
-    lineEl.textContent = lines[dodges - 1];
     if (dodges < 3) {
       b.tx = (Math.random() * 2 - 1) * (view.halfW - 1.5);
       b.tz = (Math.random() * 2 - 1) * (view.halfH * .55);
-      b.ts = .75;
+      b.ts = view.narrow ? .6 : .75; b.pop = 1;
       return;
     }
   }
@@ -929,7 +929,7 @@ window.__drawBadge = (c, id) => { const t = [...TIERS, LOOPER].find(z => z.id ==
 async function makeScore() {
   try { await document.fonts.ready; } catch (e) {}
   if (!btnImg.complete) await new Promise(r => { btnImg.onload = btnImg.onerror = r; });
-  tier = tierFor(presses);
+  tier = tierFor(presses); setShareLink();
   const c = document.createElement('canvas');
   drawBadge(c, tier, `${presses} presses to deposit ${amount}.`);
   $('#scoreImg').src = c.toDataURL('image/png');
@@ -940,7 +940,7 @@ function animateEnd() {
 }
 
 /* ---------- the happy ending: deposit money, confetti, start ___ ---------- */
-const WORDS = { 'gamble':'playing', 'buy stocks':'investing', 'trade predictions':'trading', 'rip packs':'playing' };
+const WORDS = { 'bet on sports':'playing', 'buy stocks':'investing', 'trade predictions':'trading', 'rip packs':'playing' };
 let wordTimer = null;
 $('#depositNow').addEventListener('click', () => {
   track('deposit_click', { amount, method, use: useCase });
@@ -983,12 +983,15 @@ function confetti(ox, oy, n = 180) {
   })(t0);
 }
 
-$('#share').addEventListener('click', () => {
-  const text = `${tier.title}. ${presses} presses to deposit ${amount}.\n\nyour turn:`;
+function setShareLink() {
   const url = `https://redbutton.emilylai.com/s/${tier.id}/`;
-  track('share', { presses, amount, tier: tier.id, channel: 'x' });
-  window.open(`https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank', 'noopener');
-});
+  const text = `I clicked a red button ${presses} times.\nTry clicking: ${url}`;
+  const a = $('#share');
+  // a real x.com link: on phones it opens the X app with the post written; on desktop it opens a new tab.
+  a.href = `https://x.com/intent/post?text=${encodeURIComponent(text)}`;
+  if (!/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) a.target = '_blank'; else a.removeAttribute('target');
+}
+$('#share').addEventListener('click', () => { track('share', { presses, amount, tier: tier.id, channel: 'x' }); });
 $('#saveCard').addEventListener('click', async e => {
   e.preventDefault(); if (!scoreBlob) return;
   track('save_badge', { tier: tier.id });
