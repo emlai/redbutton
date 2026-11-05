@@ -41,9 +41,9 @@
   #game { position:relative; height:100svh; min-height:520px; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; overflow:hidden; touch-action:none; }
   #headline { position:absolute; left:0; right:0; top:9svh; text-align:center; padding:0 22px;
     font-weight:900; font-size:clamp(28px,6.4vw,54px); line-height:1.04; letter-spacing:-.005em; word-spacing:.04em; transition:opacity .4s; }
-  #canvasWrap { position:absolute; left:0; right:0; top:12svh; height:60svh; }
+  #canvasWrap { position:absolute; left:0; right:0; top:17svh; height:58svh; }
   canvas { display:block; width:100%; height:100%; }
-  #hits { position:absolute; left:0; right:0; top:12svh; height:60svh; }
+  #hits { position:absolute; left:0; right:0; top:17svh; height:58svh; }
   .hit { position:absolute; border-radius:50%; transform:translate(-50%,-50%); cursor:pointer; display:grid; place-items:center; touch-action:manipulation; }
   .hit .lab .funlogo { height:1.5em; width:auto; display:block; color:#111; margin-top:2px; }
   #line .inlogo { display:inline-block; vertical-align:-.12em; }
@@ -53,7 +53,7 @@
   .nogl .hit { background:radial-gradient(circle at 42% 35%, #ff6a5c 0, #e3150c 38%, #b40c05 75%, #7a0603 100%); box-shadow:0 10px 18px -6px rgba(0,0,0,.45), inset 0 -6px 10px rgba(80,0,0,.45); }
   .nogl .hit.grey { background:radial-gradient(circle at 42% 35%, #ddd 0, #9a9a9a 60%, #6d6d6d 100%); }
 
-  #line { position:absolute; left:0; right:0; top:73svh; text-align:center; padding:0 24px;
+  #line { position:absolute; left:0; right:0; top:76svh; text-align:center; padding:0 24px;
     font-weight:900; font-size:clamp(20px,5.4vw,34px); line-height:1.18; letter-spacing:0; word-spacing:.04em; transition:transform .5s cubic-bezier(.2,.9,.3,1.3), font-size .3s; min-height:1.2em; }
   #line.upside { transform:rotate(180deg); }
   #line.yay { font-size:clamp(44px,13vw,80px); color:var(--red); animation:yay .5s cubic-bezier(.2,.9,.3,1.6); }
@@ -61,6 +61,10 @@
   #line.tiny { font-size:9px; letter-spacing:0; font-weight:500; }
   #sub { display:none !important; position:absolute; left:0; right:0; top:calc(73svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
   #dot { position:absolute; width:44px; height:44px; transform:translate(-50%,-50%); display:none; cursor:pointer; border:0; background:none; padding:0; }
+  #dot.glide { transition:left .7s cubic-bezier(.3,1.5,.5,1), top .7s cubic-bezier(.3,1.5,.5,1); }
+  #line .de.hide { color:transparent; }
+  #line .de.q { color:transparent; background:linear-gradient(to top, transparent 0, transparent .47em, #111 .47em); -webkit-background-clip:text; background-clip:text; }
+  #line .bl { display:inline-block; width:0; height:0; vertical-align:baseline; }
   #dot.peek::after { animation:peek 2.4s ease-in-out infinite; }
   @keyframes peek { 0%,80%,100% { transform:translate(-50%,-50%) scale(1); } 88% { transform:translate(-50%,-50%) scale(1.6); } }
   #dot::after { content:""; position:absolute; left:50%; top:50%; width:var(--d,9px); height:var(--d,9px); transform:translate(-50%,-50%); border-radius:50%;
@@ -206,10 +210,11 @@
 const INTRO = [
   { id:'intro', line:'', fx:'single', headline:true },
   { line:'you pressed it.', fx:'single' },
+  { line:'are you sure?', fx:'nudge' },
   { line:"what if there's a hidden fee?", fx:'grow' },
   { line:'what if it charges you twice?', fx:'hydra' },
   { line:"what if it's locked for 3 days?", fx:'lock' },
-  { line:"what if you can't get it back out?", fx:'chase' },
+  { line:"what if you can't withdraw?", fx:'chase' },
   { line:'what if the app just disappears?', fx:'vanish' },
   { line:'what are you even trying to do?', fx:'use4' },
   { line:'is this even the real site?', fx:'decoy3', fear:'fake site' },
@@ -242,7 +247,8 @@ const SEQ = {
     { line:'day 59. it can still bounce.', fx:'grey' },
     { line:'your bank said no.', fx:'shudder', fear:'bank said no', pin:{layer:'sources', t:'your bank said no'} },
     { line:'call your bank.', fx:'ring' },
-    { line:'your call is very important to us.', fx:'ring' }
+    { line:'your call is very important to us.', fx:'ring' },
+    { line:"you've been on hold for 34 minutes.", fx:'sleep' }
   ],
   crypto: [
     { line:'send USDC. pick a network.', fx:'chain4' },
@@ -259,8 +265,8 @@ const ORDER = { card:['card','id','bank'], bank:['bank','id','card'], crypto:['c
 const LEAD = { card:{ line:'ok. try a card.', fx:'single' }, id:{ line:'first, a few checks.', fx:'single' }, bank:{ line:'ok. try your bank.', fx:'single' }, crypto:{ line:'ok. try crypto.', fx:'single' } };
 const OUTRO = [
   { line:'pick a payment method.', fx:'grid', fear:'40 options', pin:{layer:'routing', t:'40 options, nothing picked for you'} },
-  { line:'40 options. none of them work.', fx:'single' },
   { line:'terms and conditions apply.', fx:'single', text:'upside', fear:'fine print' },
+  { line:'did you read the fine print?', fx:'single' },
   { line:'you agreed to this.', fx:'single', text:'tiny' },
   { line:'', fx:'colors' },
   { line:'just kidding.', fx:'fade' },
@@ -268,15 +274,15 @@ const OUTRO = [
   { line:() => `you just wanted to ${WANTED[useCase] || 'deposit'}.`, fx:'single' },
   { line:"there's a better way.", fx:'single' },
   { line:"it's been here the whole time.", fx:'single', dot:true, dotI:true },
-  { line:'look harder.', fx:'single', dot:true },
-  { line:'', fx:'single', dot:true },
+  { line:'look harder.', fx:'single', dot:true, dotEnd:'.' },
+  { line:'do you love struggling?', fx:'single', dot:true, dotEnd:'?' },
   { line:'', fx:'single', dot:true },
   { line:'ok. from the top.', fx:'single', loop:true, dot:true }
 ];
 // Reasons a payment method fails, shown one per tap on the 40-button screen.
-const GRID_NOPES = ['internet timed out.', 'you sent the wrong token.', 'hidden fees are more than your deposit.', 'not in your country.',
-  'wrong network.', 'session expired. start over.', 'price changed. try again.', 'minimum $100.', 'card only.', 'needs a US bank account.',
-  'down for maintenance.', '3 to 5 business days.', 'account under review.', 'download the app first.'];
+const GRID_NOPES = ['internet timed out.', 'you sent the wrong token.', 'hidden fees are more than your deposit.', 'not available in your country.',
+  'wrong network.', 'session expired. start over.', 'price changed. try again.', 'card only.', 'needs a US bank account.',
+  'down for maintenance.', '3 to 5 business days.', 'account under review.', 'payment failed. no reason given.', 'charged. nothing arrived.', 'verify your email first.'];
 const GRID_TAPS = 8;
 
 const FUN_LOGO = '<svg class="funlogo" viewBox="34 22 406 120" aria-label="Fun" role="img">' +
@@ -293,7 +299,7 @@ function buildSteps(method) {
   STEPS = [...INTRO];
   order.forEach((k, i) => { if (i) STEPS.push({ ...LEAD[k], sec:k }); else STEPS.push({ ...SEQ[k][0], sec:k }); STEPS.push(...SEQ[k].slice(i ? 0 : 1)); });
   STEPS.push({ ...OUTRO[0], sec:'outro' }, ...OUTRO.slice(1));
-  STEPS[7] = { ...STEPS[7], sec:'intro_done' };
+  const u = STEPS.findIndex(x => x.fx === 'use4'); STEPS[u] = { ...STEPS[u], sec:'intro_done' };
 }
 buildSteps('card');
 const FEARS_TOTAL = [...INTRO, ...Object.values(SEQ).flat(), ...OUTRO].filter(s => s.fear).length;
@@ -315,9 +321,9 @@ const PATHS = {
   bank:   { button:'one tap', routing:'picks the bank rail your bank actually allows', sources:'your bank account', connect:'one bank link', rails:'the local bank transfer for your country', risk:'one identity check', convert:'your currency to USDC', settle:'credited before the transfer settles', app:'ready to use' },
   crypto: { button:'one tap', routing:'takes the token you have, not the one it wanted', sources:'your exchange or wallet', connect:'one deposit address', rails:'a stablecoin transfer', risk:'one wallet screening', convert:'any chain you sent from, handled', settle:'USDC', app:'ready to use' }
 };
-const AMOUNT_TAKES = { '$50':'$50. testing the waters?', '$500':'$500. very reasonable.', '$5,000':'$5,000 on a first deposit? ok, risk on.' };
+const AMOUNT_TAKES = { '$50':'$50. testing the waters?', '$500':'$500. very reasonable.', '$5,000':'$5,000 on first deposit? woah.' };
 const WANTED = { 'gamble':'gamble', 'buy stocks':'buy stocks', 'trade predictions':'trade', 'rip packs':'rip some packs' };
-const HACKS = ['fake login pages. wallet drainers.', 'address poisoning.', 'fake support DMs. SIM swaps.'];
+const HACKS = ['fake login pages. wallet drainers.', 'fake support DMs.', 'social engineering deepfakes.'];
 const USES = { 'gamble':'a bet', 'buy stocks':'stocks', 'trade predictions':'a prediction market', 'rip packs':'card packs' };
 
 /* =========================================================================
@@ -677,6 +683,7 @@ function showStep(i) {
   lineEl.className = S.text || '';
   if (S.fx === 'colors') lineEl.innerHTML = `let's have some <span class="inlogo">${FUN_LOGO}</span>`;
   else if (S.dotI) lineEl.innerHTML = '<span class="di">ı</span>' + S.line.slice(1);
+  else if (S.dotEnd) lineEl.innerHTML = S.line.slice(0, -1) + `<span class="de ${S.dotEnd === '.' ? 'hide' : 'q'}">${S.dotEnd}</span><span class="bl"></span>`;
   else lineEl.textContent = typeof S.line === 'function' ? S.line() : S.line;
   subEl.textContent = typeof S.sub === 'function' ? S.sub() : (S.sub || '');
   if (S.fx === 'hacks') hackTaps = 0;
@@ -694,7 +701,7 @@ function showStep(i) {
       waiting = true; setTimeout(() => { waiting = false; next(); }, 1100);
     }, 1000);
   }
-  if (presses >= 38 && !dotShown && !escaped) showEscape();
+
   if (S.fear) { fears.add(S.fear); }
   if (S.pin && !pins.find(p => p.t === S.pin.t)) pins.push(S.pin);
   if (S.dot) placeDot();
@@ -711,7 +718,16 @@ function placeDot() {
     dotEl.style.left = (r.left - g.left + r.width / 2) + 'px';
     dotEl.style.top = (r.top - g.top + r.height / 2 - fs * .43) + 'px';
     dotEl.style.setProperty('--d', Math.max(6, Math.round(fs * .2)) + 'px'); dotEl.classList.remove('peek');
-  } else if (!dotShown) { dotEl.style.left = '57%'; dotEl.style.top = 'calc(73svh + 3.9em)'; }
+  } else if (lineEl.querySelector('.de')) {
+    // sits exactly where the period is, or on the dot of the question mark.
+    const de = lineEl.querySelector('.de'), bl = lineEl.querySelector('.bl');
+    const g = $('#game').getBoundingClientRect(), r = de.getBoundingClientRect(), base = bl.getBoundingClientRect().bottom, fs = parseFloat(getComputedStyle(lineEl).fontSize);
+    const q = de.textContent === '?';
+    dotEl.classList.add('glide');
+    dotEl.style.left = (r.left - g.left + r.width * (q ? .5 : .5)) + 'px';
+    dotEl.style.top = (base - g.top - fs * (q ? .1 : .1)) + 'px';
+    dotEl.style.setProperty('--d', Math.max(6, Math.round(fs * (q ? .26 : .22))) + 'px');
+  } else if (!dotShown) { dotEl.style.left = '57%'; dotEl.style.top = 'calc(76svh + 3.9em)'; }
   dotShown = true;
 }
 function next() {
@@ -743,7 +759,7 @@ function onPress(b) {
     if (idx !== realIdx) {
       b.tgrey = 1; b.shake = .7; SFX.nope();
       const wrong = buttons.filter(x => x.tgrey > .5).length;
-      lineEl.textContent = wrong > 1 ? 'also phishing.' : "oh, that's a phishing site.";
+      lineEl.textContent = wrong > 1 ? 'nope, another scam.' : "oh, that's a phishing site.";
       subEl.textContent = '';
       return;
     }
@@ -954,7 +970,7 @@ $('#share').addEventListener('click', async () => {
 });
 $('#again').addEventListener('click', () => {
   clearInterval(wordTimer); $('#depositNow').style.display = ''; $('#started').classList.remove('show');
-  ended = false; escaped = false; dotEl.classList.remove('peek'); $('#copied').textContent = ''; presses = 0; pins.length = 0; fears.clear(); amount = '$500'; method = 'card'; useCase = 'trade predictions'; buildSteps('card'); dotShown = false;
+  ended = false; escaped = false; dotEl.classList.remove('peek', 'glide'); $('#copied').textContent = ''; presses = 0; pins.length = 0; fears.clear(); amount = '$500'; method = 'card'; useCase = 'trade predictions'; buildSteps('card'); dotShown = false;
   $('#end').classList.remove('show'); $('#game').style.display = ''; document.body.classList.add('playing');
 
   clearButtons(); showStep(0); resize();
