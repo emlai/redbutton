@@ -62,6 +62,7 @@
   #sub { display:none !important; position:absolute; left:0; right:0; top:calc(73svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
   #dot { position:absolute; width:44px; height:44px; transform:translate(-50%,-50%); display:none; cursor:pointer; border:0; background:none; padding:0; }
   #dot.glide { transition:left .7s cubic-bezier(.3,1.5,.5,1), top .7s cubic-bezier(.3,1.5,.5,1); }
+  @media (max-width:640px) { #game { --ct:30%; } #line { top:82%; } }
   #line .de.hide { color:transparent; }
   #line .de.q { color:transparent; background:linear-gradient(to top, transparent 0, transparent .47em, #111 .47em); -webkit-background-clip:text; background-clip:text; }
   #line .bl { display:inline-block; width:0; height:0; vertical-align:baseline; }
@@ -81,7 +82,7 @@
   #end h1 { font-weight:900; font-size:clamp(32px,8vw,56px); line-height:1.04; letter-spacing:-.01em; word-spacing:.03em; margin:0; }
   #end h1 em { font-style:normal; background:linear-gradient(transparent 58%, #ffe066 58%, #ffe066 92%, transparent 92%); padding:0 .06em; }
   .scorewrap { margin:24px 0 0; }
-  .scorewrap img { display:block; width:100%; height:auto; border-radius:22px; box-shadow:0 18px 40px -22px rgba(60,40,80,.45); transform:rotate(-1.2deg); transition:transform .3s; }
+  .scorewrap img { display:block; width:100%; height:auto; border-radius:20px; box-shadow:0 18px 40px -22px rgba(60,40,80,.45); transform:rotate(-1.2deg); transition:transform .3s; }
   .scorewrap img:hover { transform:rotate(0deg) scale(1.01); }
   .recap { font-weight:500; font-size:18px; line-height:1.5; color:#333; margin:18px 0 0; }
   .sec { font-weight:900; font-size:22px; letter-spacing:0; margin:48px 0 6px; }
@@ -125,7 +126,10 @@
   #confetti { position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:30; }
   .endbtns { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; justify-content:center; }
   .endbtns .again { margin-top:0; }
-  .share { border:0; background:#111; color:#fff; font-weight:700; font-size:15px; padding:12px 20px; border-radius:999px; cursor:pointer; }
+  .share { border:0; background:#111; color:#fff; font-weight:700; font-size:16px; padding:12px 22px; border-radius:999px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+  .share .xlogo { width:17px; height:17px; display:block; }
+  .savecard { text-align:center; margin:12px 0 0; font-size:14px; }
+  .savecard a { color:#6b6873; text-decoration:underline; text-underline-offset:3px; }
   .copied { text-align:center; margin:10px 0 0; font-size:14px; color:var(--muted); min-height:1.2em; }
   .again { margin-top:26px; border:1px solid #ddd; background:#fff; color:#111; font-weight:700; font-size:15px; padding:11px 20px; border-radius:999px; cursor:pointer; }
   .stats { margin:14px 0 0; font-weight:500; font-size:14px; color:var(--muted); }
@@ -172,7 +176,8 @@
 <section id="end" aria-live="polite">
   <h1>Depositing money <em>shouldn't</em> be scary.</h1>
   <div class="scorewrap"><img id="scoreImg" alt="your score card"></div>
-  <div class="endbtns"><button class="share" id="share">share your score</button><button class="again" id="again">play again</button></div>
+  <div class="endbtns"><button class="share" id="share">Share on <svg class="xlogo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></button><button class="again" id="again">play again</button></div>
+  <p class="savecard"><a href="#" id="saveCard">save your badge</a></p>
   <p class="copied" id="copied" aria-live="polite"></p>
 
   <h2 class="sec">What should have happened</h2>
@@ -291,6 +296,7 @@ const FUN_LOGO = '<svg class="funlogo" viewBox="34 22 406 120" aria-label="Fun" 
   '<g transform="translate(333.205 96.804) scale(2.4556)"><path fill="currentColor" d="M11.785-12.905H5.574V.28C5.574 5.065 3.691 7.356-.229 7.356C-3.691 7.356-5.574 5.421-5.574.636V-12.905H-11.785V2.825C-11.785 8.985-8.374 12.905-2.571 12.905C.789 12.905 4.047 11.276 5.574 8.883L6.033 12.243H11.785Z"/></g>' +
   '<g transform="translate(405.711 95.052) scale(2.4556)"><path fill="currentColor" d="M-11.938 12.956H-5.727V-.585C-5.727-4.658-3.385-7.305.433-7.305C3.64-7.305 5.727-5.269 5.727-1.044V12.956H11.938V-2.52C11.938-9.036 8.68-12.956 2.367-12.956C-1.044-12.956-4.098-11.479-5.676-8.934L-6.185-12.192H-11.938Z"/></g></svg>';
 
+let looped = false;
 let STEPS = [], hackTaps = 0, burstTaps = 0, hydraTaps = 0, holdT = null, timerT = null, escaped = false;
 const secSeen = new Set();
 const CARD_NOPES = ["nope. that card doesn't work.", 'expired.', 'maxed out.'];
@@ -730,7 +736,7 @@ function placeDot() {
 }
 function next() {
   const S = STEPS[step];
-  if (S.loop) { track('loop', { presses }); amount = '$500'; method = 'card'; buildSteps('card'); showStep(1); return; }
+  if (S.loop) { looped = true; track('loop', { presses }); amount = '$500'; method = 'card'; buildSteps('card'); showStep(1); return; }
   showStep(Math.min(step + 1, STEPS.length - 1));
 }
 function onPress(b) {
@@ -879,30 +885,51 @@ function buildEnd() {
   });
   $('#stats').textContent = lifetime > presses ? `${lifetime} presses on this device, all time.` : '';
 }
-// The score card: drawn once, shown on the page, and the exact image people share.
-let scoreBlob = null;
+// The badge: a title you earned. Drawn on the page for you, and each title has its own share page
+// (/s/<id>/) so the X card shows the badge.
+const TIERS = [
+  { id:'speedrunner', max:55, title:'speedrunner', line:'found the button fast. suspicious.' },
+  { id:'certified-struggler', max:70, title:'certified struggler', line:'depositing money took me a while.' },
+  { id:'professional-struggler', max:90, title:'professional struggler', line:'depositing money took me forever.' },
+  { id:'loves-struggling', max:1e9, title:'loves struggling', line:'i think i love struggling.' }
+];
+const LOOPER = { id:'lives-here-now', title:'lives here now', line:'went around twice. i live here now.' };
+function tierFor(n) { return looped ? LOOPER : TIERS.find(t => n <= t.max); }
+let scoreBlob = null, tier = TIERS[1];
 const btnImg = new Image(); btnImg.src = 'button.png';
+function drawBadge(c, t, line) {
+  const W = 1200, H = 630; c.width = W; c.height = H; const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#fff1a8'); g.addColorStop(.55, '#ffd1e6'); g.addColorStop(1, '#c9e4ff');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const cols = ['#ff5c8a', '#ffd23f', '#3bceac', '#4d9fff', '#b388ff', '#ff9f43', '#7ae582'];
+  let seed = t.id.length * 7919 + 17; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 40; i++) {
+    const px = rnd() * W, py = rnd() * H; if (px > 470 && px < 1150 && py > 120 && py < 520) continue; if (px < 470 && py > 110 && py < 520) continue;
+    x.save(); x.translate(px, py); x.rotate(rnd() * 3.14); x.fillStyle = cols[i % cols.length]; x.fillRect(-10, -4.5, 20, 9); x.restore();
+  }
+  if (btnImg.naturalWidth) { const w = 380, h = w * btnImg.naturalHeight / btnImg.naturalWidth; x.drawImage(btnImg, 70, (H - h) / 2 + 10, w, h); }
+  const F = '"Inter Tight", "Helvetica Neue", Arial, sans-serif', L = 500;
+  // sticker
+  x.save(); x.translate(L + 4, 150); x.rotate(-.05);
+  x.font = `900 26px ${F}`; const sw = x.measureText('BADGE UNLOCKED').width + 40;
+  x.fillStyle = '#111'; x.beginPath(); x.roundRect(0, -30, sw, 46, 23); x.fill();
+  x.fillStyle = '#ffe066'; x.textAlign = 'left'; x.fillText('BADGE UNLOCKED', 20, 2); x.restore();
+  // title, wrapped
+  x.fillStyle = '#111'; x.textAlign = 'left'; let fs = 104; x.font = `900 ${fs}px ${F}`;
+  const words = t.title.split(' '), lines = []; let cur = '';
+  words.forEach(w => { const tryL = cur ? cur + ' ' + w : w; if (x.measureText(tryL).width > 640 && cur) { lines.push(cur); cur = w; } else cur = tryL; }); lines.push(cur);
+  lines.forEach((l, i) => x.fillText(l, L, 268 + i * fs * .98));
+  const y2 = 268 + (lines.length - 1) * fs * .98 + 74;
+  x.font = `700 40px ${F}`; x.fillStyle = '#2b2833'; x.fillText(line, L, y2);
+  x.font = `700 28px ${F}`; x.fillStyle = '#111'; x.fillText('do not press  ·  redbutton.emilylai.com', L, 572);
+}
+window.__drawBadge = (c, id) => { const t = [...TIERS, LOOPER].find(z => z.id === id); drawBadge(c, t, t.line); };
 async function makeScore() {
-  const total = new Set(STEPS.filter(x => x.fear).map(x => x.fear)).size || fears.size;
   try { await document.fonts.ready; } catch (e) {}
   if (!btnImg.complete) await new Promise(r => { btnImg.onload = btnImg.onerror = r; });
-  const S = 1080, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
-  const g = x.createLinearGradient(0, 0, S, S); g.addColorStop(0, '#fff1a8'); g.addColorStop(.55, '#ffd1e6'); g.addColorStop(1, '#c9e4ff');
-  x.fillStyle = g; x.fillRect(0, 0, S, S);
-  const cols = ['#ff5c8a', '#ffd23f', '#3bceac', '#4d9fff', '#b388ff', '#ff9f43', '#7ae582'];
-  let seed = presses * 7919 + 13; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  for (let i = 0; i < 46; i++) {
-    const px = rnd() * S, py = rnd() * S; if (py > 250 && py < 960 && px > 150 && px < 930) continue;
-    x.save(); x.translate(px, py); x.rotate(rnd() * 3.14); x.fillStyle = cols[i % cols.length]; x.fillRect(-11, -5, 22, 10); x.restore();
-  }
-  const F = '"Inter Tight", "Helvetica Neue", Arial, sans-serif';
-  x.fillStyle = '#111'; x.textAlign = 'center';
-  x.font = `700 40px ${F}`; x.fillText('do not press', S / 2, 104);
-  if (btnImg.naturalWidth) { const w = 380, h = w * btnImg.naturalHeight / btnImg.naturalWidth; x.drawImage(btnImg, (S - w) / 2, 150, w, h); }
-  x.font = `900 250px ${F}`; x.fillText(String(presses), S / 2, 690);
-  x.font = `900 58px ${F}`; x.fillText(`presses to deposit ${amount}.`, S / 2, 780);
-  x.font = `500 40px ${F}`; x.fillStyle = '#3d3a44'; x.fillText(`found ${fears.size} of ${total} ways it goes wrong.`, S / 2, 850);
-  x.font = `700 34px ${F}`; x.fillStyle = '#111'; x.fillText('redbutton.emilylai.com', S / 2, 1010);
+  tier = tierFor(presses);
+  const c = document.createElement('canvas');
+  drawBadge(c, tier, `${presses} presses to deposit ${amount}.`);
   $('#scoreImg').src = c.toDataURL('image/png');
   scoreBlob = await new Promise(r => c.toBlob(r, 'image/png'));
 }
@@ -954,21 +981,22 @@ function confetti(ox, oy, n = 180) {
   })(t0);
 }
 
-$('#share').addEventListener('click', async () => {
-  const text = `i pressed the button ${presses} times trying to deposit ${amount}. redbutton.emilylai.com`;
-  track('share', { presses, amount });
-  const file = scoreBlob ? new File([scoreBlob], 'do-not-press-score.png', { type: 'image/png' }) : null;
-  try {
-    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
-    if (navigator.share) { await navigator.share({ title: 'do not press', text, url: 'https://redbutton.emilylai.com' }); return; }
-  } catch (e) { if (e && e.name === 'AbortError') return; }
-  // desktop: save the card and copy the line.
-  if (scoreBlob) { const a = document.createElement('a'); a.href = URL.createObjectURL(scoreBlob); a.download = 'do-not-press-score.png'; a.click(); }
-  try { await navigator.clipboard.writeText(text); $('#copied').textContent = 'card saved. caption copied. go post it.'; } catch (e) { $('#copied').textContent = 'card saved. ' + text; }
+$('#share').addEventListener('click', () => {
+  const text = `${tier.title}. ${presses} presses to deposit ${amount}.\n\nyour turn:`;
+  const url = `https://redbutton.emilylai.com/s/${tier.id}/`;
+  track('share', { presses, amount, tier: tier.id, channel: 'x' });
+  window.open(`https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank', 'noopener');
+});
+$('#saveCard').addEventListener('click', async e => {
+  e.preventDefault(); if (!scoreBlob) return;
+  track('save_badge', { tier: tier.id });
+  const file = new File([scoreBlob], `do-not-press-${tier.id}.png`, { type: 'image/png' });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; } } catch (err) { if (err && err.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(scoreBlob); a.download = file.name; a.click();
 });
 $('#again').addEventListener('click', () => {
   clearInterval(wordTimer); $('#depositNow').style.display = ''; $('#started').classList.remove('show');
-  ended = false; escaped = false; dotEl.classList.remove('peek', 'glide'); $('#copied').textContent = ''; presses = 0; pins.length = 0; fears.clear(); amount = '$500'; method = 'card'; useCase = 'trade predictions'; buildSteps('card'); dotShown = false;
+  ended = false; looped = false; escaped = false; dotEl.classList.remove('peek', 'glide'); $('#copied').textContent = ''; presses = 0; pins.length = 0; fears.clear(); amount = '$500'; method = 'card'; useCase = 'trade predictions'; buildSteps('card'); dotShown = false;
   $('#end').classList.remove('show'); $('#game').style.display = ''; document.body.classList.add('playing');
 
   clearButtons(); showStep(0); resize();
