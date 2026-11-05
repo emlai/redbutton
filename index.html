@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>do not press</title>
 <meta name="description" content="Depositing money into an app is scary. Do not press the button.">
 <meta property="og:title" content="do not press">
@@ -15,45 +15,50 @@
 <meta name="twitter:image" content="https://redbutton.emilylai.com/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
   :root { --red:#d8130a; --ink:#111; --muted:#8a8a86; }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html, body { margin:0; background:#fff; color:var(--ink); font-family:"Archivo", "Arial Black", Arial, sans-serif; }
+  html, body { margin:0; background:#fff; color:var(--ink); font-family:"Inter Tight", "Helvetica Neue", Arial, sans-serif; }
+  html, body { touch-action:manipulation; overscroll-behavior:none; }
   body { overflow-x:hidden; }
+  body.playing { overflow:hidden; position:fixed; inset:0; }
   button { font:inherit; }
 
   /* ---------- game ---------- */
-  #game { position:relative; height:100svh; min-height:560px; user-select:none; -webkit-user-select:none; overflow:hidden; }
+  #game { position:relative; height:100svh; min-height:520px; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; overflow:hidden; touch-action:none; }
   #headline { position:absolute; left:0; right:0; top:9svh; text-align:center; padding:0 22px;
-    font-weight:900; font-size:clamp(28px,6.4vw,54px); line-height:1.02; letter-spacing:-.02em; transition:opacity .4s; }
-  #canvasWrap { position:absolute; left:0; right:0; top:14svh; height:56svh; }
+    font-weight:900; font-size:clamp(28px,6.4vw,54px); line-height:1.04; letter-spacing:-.005em; word-spacing:.04em; transition:opacity .4s; }
+  #canvasWrap { position:absolute; left:0; right:0; top:12svh; height:60svh; }
   canvas { display:block; width:100%; height:100%; }
-  #hits { position:absolute; left:0; right:0; top:14svh; height:56svh; }
+  #hits { position:absolute; left:0; right:0; top:12svh; height:60svh; }
   .hit { position:absolute; border-radius:50%; transform:translate(-50%,-50%); cursor:pointer; display:grid; place-items:center; touch-action:manipulation; }
   .hit .lab { position:absolute; top:100%; margin-top:6px; font-weight:900; font-size:clamp(16px,4.4vw,22px); white-space:nowrap; letter-spacing:-.01em; pointer-events:none; }
   .hit .lock { position:absolute; width:34%; height:34%; right:-6%; top:-12%; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
   .nogl .hit { background:radial-gradient(circle at 42% 35%, #ff6a5c 0, #e3150c 38%, #b40c05 75%, #7a0603 100%); box-shadow:0 10px 18px -6px rgba(0,0,0,.45), inset 0 -6px 10px rgba(80,0,0,.45); }
   .nogl .hit.grey { background:radial-gradient(circle at 42% 35%, #ddd 0, #9a9a9a 60%, #6d6d6d 100%); }
 
-  #line { position:absolute; left:0; right:0; top:72svh; text-align:center; padding:0 24px;
-    font-weight:900; font-size:clamp(20px,5.4vw,34px); line-height:1.15; letter-spacing:-.01em; transition:transform .5s cubic-bezier(.2,.9,.3,1.3), font-size .3s; min-height:1.2em; }
+  #line { position:absolute; left:0; right:0; top:73svh; text-align:center; padding:0 24px;
+    font-weight:900; font-size:clamp(20px,5.4vw,34px); line-height:1.18; letter-spacing:0; word-spacing:.04em; transition:transform .5s cubic-bezier(.2,.9,.3,1.3), font-size .3s; min-height:1.2em; }
   #line.upside { transform:rotate(180deg); }
   #line.tiny { font-size:9px; letter-spacing:0; font-weight:500; }
-  #sub { position:absolute; left:0; right:0; top:calc(72svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
+  #sub { position:absolute; left:0; right:0; top:calc(73svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
   #dot { position:absolute; width:44px; height:44px; transform:translate(-50%,-50%); display:none; cursor:pointer; border:0; background:none; padding:0; }
   #dot::after { content:""; position:absolute; left:50%; top:50%; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; border-radius:50%;
     background:radial-gradient(circle at 40% 35%, #ff7a6e, #d8130a 60%, #8d0703); box-shadow:0 1px 2px rgba(0,0,0,.4); }
-  #hud { position:absolute; right:14px; top:12px; font:500 11px/1.3 "Archivo", Arial, sans-serif; color:var(--muted); text-align:right; letter-spacing:.02em; }
+  #snd { position:absolute; right:max(10px, env(safe-area-inset-right)); top:max(10px, env(safe-area-inset-top)); width:40px; height:40px; border:0; background:none; padding:8px; color:#b9b9b4; cursor:pointer; z-index:5; }
+  #snd svg { width:100%; height:100%; display:block; }
+  #snd .x { display:none; } #snd.off .w { display:none; } #snd.off .x { display:inline; }
+  #hap { position:absolute; width:1px; height:1px; overflow:hidden; opacity:0; pointer-events:none; left:-9999px; }
   #flash { position:fixed; inset:0; background:var(--red); opacity:0; pointer-events:none; transition:opacity .6s ease; z-index:20; }
 
   /* ---------- ending ---------- */
   #end { display:none; padding:56px 20px 96px; max-width:640px; margin:0 auto; }
   #end.show { display:block; }
-  #end h1 { font-weight:900; font-size:clamp(32px,8vw,56px); line-height:1.02; letter-spacing:-.025em; margin:0; }
+  #end h1 { font-weight:900; font-size:clamp(32px,8vw,56px); line-height:1.04; letter-spacing:-.01em; word-spacing:.03em; margin:0; }
   #end h1 em { font-style:normal; color:var(--red); }
   .recap { font-weight:500; font-size:18px; line-height:1.5; color:#333; margin:18px 0 0; }
-  .sec { font-weight:900; font-size:22px; letter-spacing:-.01em; margin:48px 0 6px; }
+  .sec { font-weight:900; font-size:22px; letter-spacing:0; margin:48px 0 6px; }
   .secsub { font-weight:500; font-size:15px; line-height:1.5; color:#666; margin:0 0 22px; }
 
   .steps { list-style:none; margin:0; padding:0; position:relative; }
@@ -62,7 +67,7 @@
   .step.in { opacity:1; transform:none; }
   .step .num { position:absolute; left:0; top:0; width:32px; height:32px; border-radius:50%; display:grid; place-items:center;
     background:#fff; border:2px solid #111; font-weight:700; font-size:13px; }
-  .step h3 { margin:4px 0 0; font-size:19px; font-weight:900; letter-spacing:-.01em; line-height:1.2; }
+  .step h3 { margin:4px 0 0; font-size:19px; font-weight:900; letter-spacing:0; line-height:1.2; }
   .step .what { margin:6px 0 0; font-weight:500; font-size:15px; line-height:1.5; color:#555; }
   .row { margin:10px 0 0; display:flex; gap:10px; align-items:baseline; font-size:14px; line-height:1.45; }
   .row .k { flex:0 0 74px; font-weight:500; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:#999; }
@@ -76,7 +81,7 @@
   .missing { display:inline-block; margin-top:10px; font-weight:700; font-size:12px; letter-spacing:.04em; text-transform:uppercase; background:#fff; color:var(--red); padding:4px 8px; border-radius:6px; }
 
   .def { margin:36px 0 0; padding:22px 20px; border-radius:16px; background:#111; color:#fff; }
-  .def h2 { margin:0; font-weight:900; font-size:clamp(22px,5.4vw,30px); letter-spacing:-.015em; line-height:1.1; }
+  .def h2 { margin:0; font-weight:900; font-size:clamp(22px,5.4vw,30px); letter-spacing:0; line-height:1.12; }
   .def p { margin:10px 0 0; font-weight:500; font-size:16px; line-height:1.5; color:#d8d6d0; }
   .depositNow { margin-top:18px; border:0; background:var(--red); color:#fff; font-weight:900; font-size:18px; padding:15px 26px; border-radius:999px; cursor:pointer;
     box-shadow:0 6px 0 #8d0703, 0 12px 24px -8px rgba(216,19,10,.6); transition:transform .08s, box-shadow .08s; }
@@ -116,7 +121,8 @@
 </head>
 <body>
 <section id="game" aria-label="Deposit game">
-  <div id="hud" aria-live="polite"></div>
+  <button id="snd" aria-label="sound on or off"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M17 9l5 6M22 9l-5 6"/></svg></button>
+  <label id="hap" aria-hidden="true"><input type="checkbox" switch tabindex="-1"></label>
   <div id="headline">Depositing money into an app is scary.</div>
   <div id="canvasWrap"></div>
   <div id="hits"></div>
@@ -272,7 +278,7 @@ const USES = { 'gamble':'a bet', 'buy stocks':'stocks', 'trade predictions':'a p
    STATE
    ========================================================================= */
 const $ = s => document.querySelector(s);
-const lineEl = $('#line'), subEl = $('#sub'), headEl = $('#headline'), hitsEl = $('#hits'), dotEl = $('#dot'), hud = $('#hud');
+const lineEl = $('#line'), subEl = $('#sub'), headEl = $('#headline'), hitsEl = $('#hits'), dotEl = $('#dot');
 let waiting = false;
 let step = 0, amount = '$500', method = 'card', useCase = 'trade predictions', presses = 0, dodges = 0, ended = false, dotShown = false, gridTaps = 0, realIdx = 0, nopes = [];
 const fears = new Set(), pins = [];
@@ -308,13 +314,14 @@ function initGL() {
   } catch (e) { return false; }
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.82;
+  renderer.toneMappingExposure = 0.86;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   wrap.appendChild(renderer.domElement);
   scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  scene.environmentIntensity = 0.75;
+  scene.environmentIntensity = 0.6;
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x2a1a18, .55));
   const key = new THREE.DirectionalLight(0xffffff, 1.6); key.position.set(-3, 8, 4); scene.add(key);
   const rim = new THREE.DirectionalLight(0xfff1ea, .6); rim.position.set(4, 3, -3); scene.add(rim);
   camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .1, 100);
@@ -338,7 +345,7 @@ function makeButton() {
   const b = { x:0, z:0, tx:0, tz:0, s:1, ts:1, grey:0, tgrey:0, press:0, shake:0, label:'', lock:false, alive:true };
   if (gl) {
     b.g = new THREE.Group();
-    b.mat = new THREE.MeshPhysicalMaterial({ color: 0xd8130a, roughness: .32, metalness: 0, clearcoat: 1, clearcoatRoughness: .04, sheen: .15, sheenColor: new THREE.Color(0xff3322) });
+    b.mat = new THREE.MeshPhysicalMaterial({ color: 0xd8130a, roughness: .32, metalness: 0, clearcoat: 1, clearcoatRoughness: .04, sheen: .15, sheenColor: new THREE.Color(0xff3322), emissive: 0x1c0000 });
     b.cap = new THREE.Mesh(capGeo, b.mat);
     const bezel = new THREE.Mesh(bezelGeo, bezelMat);
     const well = new THREE.Mesh(wellGeo, wellMat); well.position.y = 0.02;
@@ -403,7 +410,7 @@ function layout(fx) {
   if (fx === 'hop1') { b.ts = .8;  b.tx = -view.halfW * .42; }
   if (fx === 'hop2') { b.ts = .58; b.tx =  view.halfW * .38; }
   if (fx === 'hop3') { b.ts = .36; b.tx = -view.halfW * .1; }
-  if (fx === 'shudder') b.shake = 1;
+  if (fx === 'shudder') { b.shake = 1; SFX.declined(); }
   if (fx === 'pulse') b.shake = .45;
   if (fx === 'nudge') { b.tz = -view.halfH * .22; b.ts = .9; }
   if (fx === 'fade') { b.ts = .55; b.tgrey = .55; }
@@ -417,6 +424,8 @@ function resize() {
   const w = wrap.clientWidth, h = wrap.clientHeight, aspect = w / h;
   view.halfH = 4.2; view.halfW = view.halfH * aspect;
   if (view.halfW < 3.1) { view.halfW = 3.1; view.halfH = view.halfW / aspect; }
+  view.narrow = w < 640;
+  view.big = view.narrow ? 2.0 : 1.12;
   if (gl) {
     renderer.setSize(w, h, false);
     camera.left = -view.halfW; camera.right = view.halfW; camera.top = view.halfH; camera.bottom = -view.halfH; camera.updateProjectionMatrix();
@@ -434,20 +443,26 @@ let last = performance.now();
 function frame(now) {
   const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now;
   const k = 1 - Math.pow(.0009, dt);
+  const solo = buttons.length === 1;
   for (const b of buttons) {
+    const m = solo ? view.big : (view.narrow && buttons.length === 4 ? 1.15 : 1);
+    const clamp = buttons.length <= 4;
+    const lim = Math.max(0, view.halfW - 1.42 * b.ts * m), limZ = Math.max(0, view.halfH * .62 - .9 * b.ts * m);
+    if (clamp) { b.tx = Math.max(-lim, Math.min(lim, b.tx)); b.tz = Math.max(-limZ, Math.min(limZ, b.tz)); }
     b.x += (b.tx - b.x) * k; b.z += (b.tz - b.z) * k; b.s += (b.ts - b.s) * k * 1.1; b.grey += (b.tgrey - b.grey) * k;
     b.press = Math.max(0, b.press - dt * 4.5);
     b.shake = Math.max(0, b.shake - dt * 1.8);
     const sx = b.shake ? Math.sin(now / 22) * .22 * b.shake : 0;
     const pressY = -Math.sin(Math.min(1, b.press) * Math.PI) * .2;
+    const es = b.s * m;
     if (gl) {
-      b.g.position.set(b.x + sx, 0, b.z); b.g.scale.setScalar(Math.max(.001, b.s));
+      b.g.position.set(b.x + sx, 0, b.z); b.g.scale.setScalar(Math.max(.001, es));
       b.cap.position.y = pressY;
       b.mat.color.setRGB(.74 - .2 * b.grey, .02 + .52 * b.grey, .015 + .53 * b.grey, THREE.SRGBColorSpace);
       b.mat.roughness = .32 + .2 * b.grey;
     }
-    const [cx, cy] = project(b.x + sx, .35 * b.s, b.z);
-    const [ex] = project(b.x + sx + 1.35 * b.s, .35 * b.s, b.z);
+    const [cx, cy] = project(b.x + sx, .35 * es, b.z);
+    const [ex] = project(b.x + sx + 1.35 * es, .35 * es, b.z);
     const r = Math.max(22, (ex - cx) * 1.05);
     b.el.style.left = cx + 'px'; b.el.style.top = cy + 'px'; b.el.style.width = b.el.style.height = (r * 2) + 'px';
     b.el.classList.toggle('grey', b.grey > .5);
@@ -457,6 +472,63 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+
+
+/* ---------- sound + haptics ---------- */
+let AC = null, master = null, muted = false;
+try { muted = localStorage.getItem('dnp_muted') === '1'; } catch (e) {}
+const sndBtn = $('#snd'); sndBtn.classList.toggle('off', muted);
+function audio() {
+  if (muted) return null;
+  try {
+    if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = .55; master.connect(AC.destination); }
+    if (AC.state === 'suspended') AC.resume();
+  } catch (e) { return null; }
+  return AC;
+}
+function tone(type, f0, f1, dur, vol, when = 0) {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .006); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(master); o.start(t); o.stop(t + dur + .02);
+}
+function noise(dur, vol, freq = 2400, when = 0) {
+  const a = audio(); if (!a) return;
+  const t = a.currentTime + when, n = Math.floor(a.sampleRate * dur), buf = a.createBuffer(1, n, a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+  const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  src.buffer = buf; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = .8; g.gain.value = vol;
+  src.connect(f).connect(g).connect(master); src.start(t);
+}
+const hapEl = $('#hap');
+function buzz(pattern) {
+  try { if (navigator.vibrate) { navigator.vibrate(pattern); return; } } catch (e) {}
+  // iOS Safari has no vibrate API; toggling a native switch control gives a system tap.
+  const n = Array.isArray(pattern) ? Math.ceil(pattern.length / 2) : 1;
+  for (let i = 0; i < n; i++) setTimeout(() => { try { hapEl.click(); } catch (e) {} }, i * 90);
+}
+const SFX = {
+  press(n) { const up = Math.min(n, 40) * 4; tone('sine', 190 + up + Math.random() * 30, 60, .12, .9); noise(.025, .5, 3200); buzz(12); },
+  nope() { tone('square', 140, 90, .16, .22); tone('square', 104, 70, .2, .18, .07); buzz([25, 50, 25]); },
+  declined() { tone('sawtooth', 220, 180, .14, .16); tone('sawtooth', 165, 120, .22, .16, .15); buzz([40, 60, 40]); },
+  pick() { tone('triangle', 520, 520, .08, .35); tone('triangle', 780, 780, .1, .3, .06); buzz(10); },
+  found() { tone('sine', 300, 1400, .7, .5); noise(.5, .25, 900, .1); buzz([15, 30, 15, 30, 60]); },
+  boom() { tone('sine', 120, 38, .9, 1); noise(.6, .7, 300); buzz(120); },
+  party() { [0, .07, .14, .21].forEach((w, i) => tone('triangle', [660, 830, 990, 1320][i], [660, 830, 990, 1320][i], .14, .32, w)); for (let i = 0; i < 6; i++) noise(.03, .4, 4000, .05 + i * .06); buzz([20, 40, 20, 40, 20]); },
+};
+sndBtn.addEventListener('click', ev => {
+  ev.stopPropagation(); muted = !muted; sndBtn.classList.toggle('off', muted);
+  try { localStorage.setItem('dnp_muted', muted ? '1' : '0'); } catch (e) {}
+  if (!muted) SFX.pick();
+});
+// No pinch or double-tap zoom while playing.
+['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+let lastTouch = 0;
+document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTouch < 350 && e.target.closest('#game')) e.preventDefault(); lastTouch = now; }, { passive: false });
+document.addEventListener('touchmove', e => { if (e.touches.length > 1 || e.target.closest('#game')) e.preventDefault(); }, { passive: false });
+document.body.classList.add('playing');
 
 /* =========================================================================
    GAME FLOW
@@ -473,13 +545,12 @@ function showStep(i) {
   if (S.fx === 'dodge') dodges = 0;
   if (S.fx === 'grid') { gridTaps = 0; nopes = GRID_NOPES.slice().sort(() => Math.random() - .5); }
   layout(S.fx);
-  hud.textContent = fears.size ? `fears found ${fears.size}/${FEARS_TOTAL}` : '';
 }
 function placeDot() {
   // Right under your nose: just below the line of text, slightly off-centre.
   dotShown = true;
   dotEl.style.left = (50 + 7) + '%';
-  dotEl.style.top = 'calc(72svh + 3.9em)';
+  dotEl.style.top = 'calc(73svh + 3.9em)';
 }
 function next() {
   const S = STEPS[step];
@@ -491,8 +562,8 @@ function onPress(b) {
   presses++; lifetime++; try { localStorage.setItem('dnp_presses', lifetime); } catch (e) {}
   if (presses === 1) track('game_start');
   b.press = 1;
-  try { navigator.vibrate && navigator.vibrate(12); } catch (e) {}
   const S = STEPS[step];
+  if (['split3','method3','use4','chain4'].includes(S.fx)) SFX.pick(); else SFX.press(presses);
   if (S.fx === 'split3') { amount = b.value; track('pick_amount', { amount: b.value }); }
   if (S.fx === 'method3') { method = b.value; buildSteps(method); track('pick_method', { method: b.value }); }
   if (S.fx === 'use4') { useCase = b.value; track('pick_use', { use: b.value }); }
@@ -500,7 +571,7 @@ function onPress(b) {
   if (S.fx === 'decoy3') {
     const idx = buttons.indexOf(b);
     if (idx !== realIdx) {
-      b.tgrey = 1; b.shake = .7;
+      b.tgrey = 1; b.shake = .7; SFX.nope();
       const wrong = buttons.filter(x => x.tgrey > .5).length;
       lineEl.textContent = wrong > 1 ? 'also fake.' : "nope. that one's fake.";
       subEl.textContent = '';
@@ -508,10 +579,10 @@ function onPress(b) {
     }
   }
   if (S.fx === 'grid') {
-    if (b.tgrey > .5) { lineEl.textContent = 'still no.'; subEl.textContent = ''; b.shake = .5; return; }
+    if (b.tgrey > .5) { lineEl.textContent = 'still no.'; subEl.textContent = ''; b.shake = .5; SFX.nope(); return; }
     gridTaps++;
     if (gridTaps < GRID_TAPS) {
-      b.tgrey = 1; b.shake = .6;
+      b.tgrey = 1; b.shake = .6; setTimeout(SFX.nope, 60);
       lineEl.textContent = nopes[(gridTaps - 1) % nopes.length];
       subEl.textContent = `${40 - gridTaps} left.`;
       return;
@@ -536,13 +607,13 @@ dotEl.addEventListener('pointerdown', ev => { ev.preventDefault(); if (!ended) f
 function finish() {
   ended = true; presses++;
   track('found_button', { presses, fears: fears.size, amount, method, use: useCase });
-  dotEl.style.display = 'none';
+  dotEl.style.display = 'none'; SFX.found(); setTimeout(SFX.boom, 850);
   lineEl.textContent = ''; subEl.textContent = ''; headEl.style.opacity = 0; lineEl.className = '';
   clearButtons();
   const b = makeButton(); b.s = .1; b.ts = 1.2; b.press = 1;
   setTimeout(() => { b.ts = 9; }, 380);
   setTimeout(() => { $('#flash').style.opacity = 1; }, 900);
-  setTimeout(() => { buildEnd(); $('#game').style.display = 'none'; $('#end').classList.add('show'); window.scrollTo(0, 0); $('#flash').style.opacity = 0; animateEnd(); }, 1550);
+  setTimeout(() => { document.body.classList.remove('playing'); buildEnd(); $('#game').style.display = 'none'; $('#end').classList.add('show'); window.scrollTo(0, 0); $('#flash').style.opacity = 0; animateEnd(); }, 1550);
 }
 function buildEnd() {
   const path = PATHS[method] || PATHS.card;
@@ -571,8 +642,7 @@ const WORDS = { 'gamble':'playing', 'buy stocks':'investing', 'trade predictions
 let wordTimer = null;
 $('#depositNow').addEventListener('click', () => {
   track('deposit_click', { amount, method, use: useCase });
-  confetti();
-  try { navigator.vibrate && navigator.vibrate([20, 40, 20]); } catch (e) {}
+  confetti(); SFX.party();
   const btn = $('#depositNow'), started = $('#started'), word = $('#word');
   btn.style.display = 'none'; started.classList.add('show');
   const list = ['trading', 'playing', 'investing'];
@@ -610,7 +680,7 @@ function confetti() {
 $('#again').addEventListener('click', () => {
   clearInterval(wordTimer); $('#depositNow').style.display = ''; $('#started').classList.remove('show');
   ended = false; presses = 0; pins.length = 0; fears.clear(); amount = '$500'; method = 'card'; useCase = 'trade predictions'; buildSteps('card'); dotShown = false;
-  $('#end').classList.remove('show'); $('#game').style.display = '';
+  $('#end').classList.remove('show'); $('#game').style.display = ''; document.body.classList.add('playing');
 
   clearButtons(); showStep(0); resize();
 });
