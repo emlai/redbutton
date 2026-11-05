@@ -59,7 +59,7 @@
   #line.yay { font-size:clamp(44px,13vw,80px); color:var(--red); animation:yay .5s cubic-bezier(.2,.9,.3,1.6); }
   @keyframes yay { from { transform:scale(.3) rotate(-8deg); opacity:0; } to { transform:none; opacity:1; } }
   #line.tiny { font-size:9px; letter-spacing:0; font-weight:500; }
-  #sub { position:absolute; left:0; right:0; top:calc(73svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
+  #sub { display:none !important; position:absolute; left:0; right:0; top:calc(73svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
   #dot { position:absolute; width:44px; height:44px; transform:translate(-50%,-50%); display:none; cursor:pointer; border:0; background:none; padding:0; }
   #dot.peek::after { animation:peek 2.4s ease-in-out infinite; }
   @keyframes peek { 0%,80%,100% { transform:translate(-50%,-50%) scale(1); } 88% { transform:translate(-50%,-50%) scale(1.6); } }
@@ -75,7 +75,10 @@
   #end { display:none; padding:56px 20px 96px; max-width:640px; margin:0 auto; }
   #end.show { display:block; }
   #end h1 { font-weight:900; font-size:clamp(32px,8vw,56px); line-height:1.04; letter-spacing:-.01em; word-spacing:.03em; margin:0; }
-  #end h1 em { font-style:normal; color:var(--red); }
+  #end h1 em { font-style:normal; background:linear-gradient(transparent 58%, #ffe066 58%, #ffe066 92%, transparent 92%); padding:0 .06em; }
+  .scorewrap { margin:24px 0 0; }
+  .scorewrap img { display:block; width:100%; height:auto; border-radius:22px; box-shadow:0 18px 40px -22px rgba(60,40,80,.45); transform:rotate(-1.2deg); transition:transform .3s; }
+  .scorewrap img:hover { transform:rotate(0deg) scale(1.01); }
   .recap { font-weight:500; font-size:18px; line-height:1.5; color:#333; margin:18px 0 0; }
   .sec { font-weight:900; font-size:22px; letter-spacing:0; margin:48px 0 6px; }
   .secsub { font-weight:500; font-size:15px; line-height:1.5; color:#666; margin:0 0 22px; }
@@ -85,40 +88,41 @@
   .step { position:relative; padding:0 0 26px 52px; opacity:0; transform:translateY(10px); transition:opacity .45s ease, transform .5s cubic-bezier(.2,.9,.3,1.15); }
   .step.in { opacity:1; transform:none; }
   .step .num { position:absolute; left:0; top:0; width:32px; height:32px; border-radius:50%; display:grid; place-items:center;
-    background:#fff; border:2px solid #111; font-weight:700; font-size:13px; }
+    background:var(--c,#ffe066); color:#111; font-weight:900; font-size:14px; }
+  .step:nth-child(4n+1) { --c:#ffe066; } .step:nth-child(4n+2) { --c:#ffc2dd; } .step:nth-child(4n+3) { --c:#bfe0ff; } .step:nth-child(4n+4) { --c:#bdf0cf; }
   .step h3 { margin:4px 0 0; font-size:19px; font-weight:900; letter-spacing:0; line-height:1.2; }
   .step .what { margin:6px 0 0; font-weight:500; font-size:15px; line-height:1.5; color:#555; }
   .row { margin:10px 0 0; display:flex; gap:10px; align-items:baseline; font-size:14px; line-height:1.45; }
   .row .k { flex:0 0 74px; font-weight:500; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:#999; }
   .row .v { font-weight:700; color:#111; }
-  .row.bad .v { font-weight:500; color:#a50f08; }
-  .step.core .num { background:var(--red); border-color:var(--red); color:#fff; }
-  .step.core .card { background:var(--red); color:#fff; border-radius:14px; padding:14px 16px 16px; margin-top:-4px; }
+  .row.good .v::before { content:"✓ "; color:#1fa463; font-weight:900; }
+  .row.bad .v { font-weight:500; color:#9a9a95; text-decoration:line-through; text-decoration-color:#ccc; }
+  .step.core .num { background:#111; color:#ffe066; }
+  .step.core .card { background:#fff4b8; border-radius:16px; padding:14px 16px 16px; margin-top:-4px; }
   .step.core h3 { margin-top:0; }
-  .step.core .what, .step.core .row .v, .step.core .row.bad .v { color:#fff; }
-  .step.core .row .k { color:#ffd0ca; }
-  .missing { display:inline-block; margin-top:10px; font-weight:700; font-size:12px; letter-spacing:.04em; text-transform:uppercase; background:#fff; color:var(--red); padding:4px 8px; border-radius:6px; }
+  .step.core .what { color:#4a4532; }
+  .missing { display:inline-block; margin-top:12px; font-weight:700; font-size:12px; letter-spacing:.04em; text-transform:uppercase; background:#111; color:#ffe066; padding:5px 9px; border-radius:999px; }
 
-  .def { margin:36px 0 0; padding:22px 20px; border-radius:16px; background:#111; color:#fff; }
-  .def h2 { margin:0; font-weight:900; font-size:clamp(22px,5.4vw,30px); letter-spacing:0; line-height:1.12; }
-  .def p { margin:10px 0 0; font-weight:500; font-size:16px; line-height:1.5; color:#d8d6d0; }
+  .def { margin:36px 0 0; padding:26px 20px 24px; border-radius:22px; background:linear-gradient(140deg,#fff1a8 0%,#ffd1e6 55%,#c9e4ff 100%); color:#111; }
+  .def h2 { margin:0; font-weight:900; font-size:clamp(24px,6vw,32px); letter-spacing:0; line-height:1.12; }
+  .def p { margin:10px 0 0; font-weight:500; font-size:16px; line-height:1.5; color:#3d3a44; }
   .def { text-align:center; }
-  .depositNow { display:block; margin:22px auto 0; border:0; background:none; padding:0; color:#fff; cursor:pointer; touch-action:manipulation; -webkit-user-select:none; user-select:none; }
+  .depositNow { display:block; margin:22px auto 0; border:0; background:none; padding:0; color:#111; cursor:pointer; touch-action:manipulation; -webkit-user-select:none; user-select:none; }
   .depositNow img { display:block; width:min(220px, 56vw); height:auto; margin:0 auto; transition:transform .09s ease-out, filter .09s; -webkit-user-drag:none; }
   .depositNow span { display:block; margin-top:8px; font-weight:900; font-size:clamp(18px,4.8vw,22px); }
   .depositNow:active img, .depositNow.down img { transform:translateY(6px) scale(.97); filter:brightness(.92); }
-  .started { display:none; margin:18px 0 0 !important; font-weight:900 !important; font-size:clamp(28px,7vw,40px) !important; letter-spacing:-.02em; color:#fff !important; line-height:1.1 !important; }
-  .started .word { color:#ff2d20; background:none; padding:0; }
+  .started { display:none; margin:18px 0 0 !important; font-weight:900 !important; font-size:clamp(28px,7vw,40px) !important; letter-spacing:-.02em; color:#111 !important; line-height:1.1 !important; }
+  .started .word { color:#e5160b; background:none; padding:0; }
   .started.show { display:block; }
   .word { display:inline-block; color:var(--red); background:#fff; padding:0 10px; border-radius:8px; transition:transform .25s cubic-bezier(.2,.9,.3,1.4), opacity .2s; }
   .word.swap { transform:translateY(-45%) rotateX(75deg); opacity:0; }
   .word.in { animation:wordIn .32s cubic-bezier(.2,.9,.3,1.4); }
   @keyframes wordIn { from { transform:translateY(45%) rotateX(-75deg); opacity:0; } to { transform:none; opacity:1; } }
   #confetti { position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:30; }
-  .endbtns { display:flex; gap:10px; flex-wrap:wrap; margin-top:26px; }
+  .endbtns { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; justify-content:center; }
   .endbtns .again { margin-top:0; }
   .share { border:0; background:#111; color:#fff; font-weight:700; font-size:15px; padding:12px 20px; border-radius:999px; cursor:pointer; }
-  .copied { margin:10px 0 0; font-size:14px; color:var(--muted); min-height:1.2em; }
+  .copied { text-align:center; margin:10px 0 0; font-size:14px; color:var(--muted); min-height:1.2em; }
   .again { margin-top:26px; border:1px solid #ddd; background:#fff; color:#111; font-weight:700; font-size:15px; padding:11px 20px; border-radius:999px; cursor:pointer; }
   .stats { margin:14px 0 0; font-weight:500; font-size:14px; color:var(--muted); }
   details { margin-top:36px; border-top:1px solid #ebe9e4; padding-top:16px; font-size:14px; color:#555; }
@@ -163,7 +167,9 @@
 
 <section id="end" aria-live="polite">
   <h1>Depositing money <em>shouldn't</em> be scary.</h1>
-  <p class="recap" id="recap"></p>
+  <div class="scorewrap"><img id="scoreImg" alt="your score card"></div>
+  <div class="endbtns"><button class="share" id="share">share your score</button><button class="again" id="again">play again</button></div>
+  <p class="copied" id="copied" aria-live="polite"></p>
 
   <h2 class="sec">What should have happened</h2>
   <p class="secsub" id="secsub"></p>
@@ -176,8 +182,6 @@
     <p class="started" id="started" aria-live="polite">Start <span class="word" id="word">trading</span></p>
   </div>
 
-  <div class="endbtns"><button class="share" id="share">share your score</button><button class="again" id="again">start over</button></div>
-  <p class="copied" id="copied" aria-live="polite"></p>
   <p class="stats" id="stats"></p>
 
   <details>
@@ -202,60 +206,60 @@
 const INTRO = [
   { id:'intro', line:'', fx:'single', headline:true },
   { line:'you pressed it.', fx:'single' },
-  { line:'are you sure?', fx:'grow' },
-  { line:'like, sure sure?', fx:'hydra' },
+  { line:"what if there's a hidden fee?", fx:'grow' },
+  { line:'what if it charges you twice?', fx:'hydra' },
   { line:"what if it's locked for 3 days?", fx:'lock' },
   { line:"what if you can't get it back out?", fx:'chase' },
   { line:'what if the app just disappears?', fx:'vanish' },
   { line:'what are you even trying to do?', fx:'use4' },
-  { line:'are you sure this is a real site?', sub:"make sure it's not a phishing link!", fx:'decoy3', fear:'fake site' },
-  { line:'be careful.', sub:'lots of hacks this year.', fx:'hacks' },
+  { line:'is this even the real site?', fx:'decoy3', fear:'fake site' },
+  { line:'be careful. lots of hacks this year.', fx:'hacks' },
   { line:'ok. how much?', fx:'split3' },
-  { line:() => AMOUNT_TAKES[amount][0], sub:() => AMOUNT_TAKES[amount][1], fx:'single' },
+  { line:() => AMOUNT_TAKES[amount], fx:'single' },
   { line:'how are you paying?', fx:'method3' }
 ];
 const SEQ = {
   card: [
-    { line:'declined.', sub:"your bank doesn't recognize this transaction.", fx:'shudder', fear:'declined', pin:{layer:'rails', t:'card declined'} },
+    { line:"declined. your bank doesn't recognize this.", fx:'shudder', fear:'declined', pin:{layer:'rails', t:'card declined'} },
     { line:'try again?', fx:'dodge' },
     { line:'check your banking app.', fx:'pulse', fear:'check your app' },
     { line:'enter the code.', fx:'timer' },
     { line:'try a different card.', fx:'burst' },
-    { line:'declined.', sub:'again.', fx:'shudder' }
+    { line:'declined. again.', fx:'shudder' }
   ],
   id: [
     { line:'please verify your identity.', fx:'shrink1', fear:'verify', pin:{layer:'risk', t:'verify your identity'} },
     { line:'take a photo of your passport.', fx:'single' },
-    { line:'declined.', sub:'your photo is blurry.', fx:'blur' },
-    { line:'ok. selfie time.', sub:'turn your head left.', fx:'left' },
+    { line:'declined. your photo is blurry.', fx:'blur' },
+    { line:'selfie time. turn your head left.', fx:'left' },
     { line:'turn your head right.', fx:'right' },
     { line:'blink.', fx:'blink' },
-    { line:'verified.', sub:'now do it again for the on-ramp.', fx:'single', fear:'verify again', pin:{layer:'risk', t:'verified twice'} }
+    { line:'verified. now do it again.', fx:'single', fear:'verify again', pin:{layer:'risk', t:'verified twice'} }
   ],
   bank: [
-    { line:'pending.', sub:'press and hold. day 1.', fx:'hold', fear:'pending', pin:{layer:'rails', t:'pending for 59 days'} },
-    { line:"oh, it's the weekend.", sub:'banks are closed.', fx:'lock', fear:'weekend' },
-    { line:'day 59.', sub:'(a bank pull can still come back for 60 days)', fx:'grey' },
+    { line:'pending. press and hold.', fx:'hold', fear:'pending', pin:{layer:'rails', t:'pending for 59 days'} },
+    { line:"oh, it's the weekend. banks are closed.", fx:'lock', fear:'weekend' },
+    { line:'day 59. it can still bounce.', fx:'grey' },
     { line:'your bank said no.', fx:'shudder', fear:'bank said no', pin:{layer:'sources', t:'your bank said no'} },
     { line:'call your bank.', fx:'ring' },
     { line:'your call is very important to us.', fx:'ring' }
   ],
   crypto: [
-    { line:'send USDC.', sub:'pick a network.', fx:'chain4' },
-    { line:'copy the address.', sub:'hold still.', fx:'chase' },
+    { line:'send USDC. pick a network.', fx:'chain4' },
+    { line:'copy the address.', fx:'chase' },
     { line:'check every character.', fx:'single' },
     { line:'sent.', fx:'single' },
     { line:'wrong chain.', fx:'hop1', fear:'wrong chain', pin:{layer:'convert', t:'wrong chain'} },
     { line:'bridging…', fx:'orbit' },
     { line:"that'll be fees.", fx:'hop3' },
-    { line:'minimum deposit not met.', sub:'the fees took you under it.', fx:'dot', fear:'below minimum', pin:{layer:'convert', t:'fees ate the minimum'} }
+    { line:'minimum not met. fees took you under.', fx:'dot', fear:'below minimum', pin:{layer:'convert', t:'fees ate the minimum'} }
   ]
 };
 const ORDER = { card:['card','id','bank'], bank:['bank','id','card'], crypto:['crypto','id','card'] };
 const LEAD = { card:{ line:'ok. try a card.', fx:'single' }, id:{ line:'first, a few checks.', fx:'single' }, bank:{ line:'ok. try your bank.', fx:'single' }, crypto:{ line:'ok. try crypto.', fx:'single' } };
 const OUTRO = [
-  { line:'pick a payment method.', sub:'tap one.', fx:'grid', fear:'40 options', pin:{layer:'routing', t:'40 options, nothing picked for you'} },
-  { line:'40 options.', sub:'none of them work for you.', fx:'single' },
+  { line:'pick a payment method.', fx:'grid', fear:'40 options', pin:{layer:'routing', t:'40 options, nothing picked for you'} },
+  { line:'40 options. none of them work.', fx:'single' },
   { line:'terms and conditions apply.', fx:'single', text:'upside', fear:'fine print' },
   { line:'you agreed to this.', fx:'single', text:'tiny' },
   { line:'', fx:'colors' },
@@ -270,9 +274,9 @@ const OUTRO = [
   { line:'ok. from the top.', fx:'single', loop:true, dot:true }
 ];
 // Reasons a payment method fails, shown one per tap on the 40-button screen.
-const GRID_NOPES = ['not in your country.', 'card only.', 'bank only.', 'minimum $100.', 'maximum $50.', 'down for maintenance.',
-  'coming soon.', 'download the app first.', '3 to 5 business days.', 'wrong token.', "that's a gift card.", 'fee shows up at checkout.',
-  'sign up to see the price.', 'account under review.', 'step 2 of 3. there are 9.', 'needs a US bank account.'];
+const GRID_NOPES = ['internet timed out.', 'you sent the wrong token.', 'hidden fees are more than your deposit.', 'not in your country.',
+  'wrong network.', 'session expired. start over.', 'price changed. try again.', 'minimum $100.', 'card only.', 'needs a US bank account.',
+  'down for maintenance.', '3 to 5 business days.', 'account under review.', 'download the app first.'];
 const GRID_TAPS = 8;
 
 const FUN_LOGO = '<svg class="funlogo" viewBox="34 22 406 120" aria-label="Fun" role="img">' +
@@ -311,9 +315,9 @@ const PATHS = {
   bank:   { button:'one tap', routing:'picks the bank rail your bank actually allows', sources:'your bank account', connect:'one bank link', rails:'the local bank transfer for your country', risk:'one identity check', convert:'your currency to USDC', settle:'credited before the transfer settles', app:'ready to use' },
   crypto: { button:'one tap', routing:'takes the token you have, not the one it wanted', sources:'your exchange or wallet', connect:'one deposit address', rails:'a stablecoin transfer', risk:'one wallet screening', convert:'any chain you sent from, handled', settle:'USDC', app:'ready to use' }
 };
-const AMOUNT_TAKES = { '$50':['testing the waters?', 'smart. this might not work.'], '$500':['$500. very reasonable.', 'nothing about this will be.'], '$5,000':['on a first time deposit?', 'ok, risk on.'] };
+const AMOUNT_TAKES = { '$50':'$50. testing the waters?', '$500':'$500. very reasonable.', '$5,000':'$5,000 on a first deposit? ok, risk on.' };
 const WANTED = { 'gamble':'gamble', 'buy stocks':'buy stocks', 'trade predictions':'trade', 'rip packs':'rip some packs' };
-const HACKS = [['fake login pages.', 'wallet drainers.'], ['address poisoning.', 'one wrong character and it’s gone.'], ['fake support DMs.', 'SIM swaps. fake airdrops.']];
+const HACKS = ['fake login pages. wallet drainers.', 'address poisoning.', 'fake support DMs. SIM swaps.'];
 const USES = { 'gamble':'a bet', 'buy stocks':'stocks', 'trade predictions':'a prediction market', 'rip packs':'card packs' };
 
 /* =========================================================================
@@ -680,11 +684,11 @@ function showStep(i) {
   if (S.fx === 'hydra') hydraTaps = 0;
   clearTimeout(holdT); holdT = null; clearInterval(timerT); timerT = null;
   if (S.fx === 'timer') {
-    let left = 5; subEl.textContent = `expires in ${left}.`;
+    let left = 5; lineEl.textContent = `enter the code. ${left}`;
     timerT = setInterval(() => {
       left--;
       if (STEPS[step] !== S) { clearInterval(timerT); return; }
-      if (left > 0) { subEl.textContent = `expires in ${left}.`; buzz(8); return; }
+      if (left > 0) { lineEl.textContent = `enter the code. ${left}`; buzz(8); return; }
       clearInterval(timerT); timerT = null; lineEl.textContent = 'code expired.'; subEl.textContent = ''; SFX.nope();
       if (buttons[0]) { buttons[0].wander = false; buttons[0].tgrey = 1; buttons[0].tx = 0; buttons[0].tz = 0; }
       waiting = true; setTimeout(() => { waiting = false; next(); }, 1100);
@@ -746,11 +750,11 @@ function onPress(b) {
   }
   if (S.fx === 'hold') {
     if (b.holding) return;
-    b.holding = true; lineEl.textContent = 'holding…'; subEl.textContent = 'day 1.';
+    b.holding = true; lineEl.textContent = 'day 1.';
     let d = 1;
     const tick = () => {
       if (!b.holding || STEPS[step] !== S) return;
-      d++; subEl.textContent = d < 4 ? `day ${d}.` : ''; buzz(10); tone('sine', 300 + d * 60, 300 + d * 60, .08, .15);
+      d++; if (d < 4) lineEl.textContent = `day ${d}.`; buzz(10); tone('sine', 300 + d * 60, 300 + d * 60, .08, .15);
       b.tgrey = Math.min(.9, .25 + d * .2);
       if (d >= 4) { b.holding = false; holdT = null; lineEl.textContent = 'still pending.'; next(); return; }
       holdT = setTimeout(tick, 700);
@@ -760,7 +764,7 @@ function onPress(b) {
   }
   if (S.fx === 'timer') {
     clearInterval(timerT); timerT = null; b.wander = false; b.tgrey = 1; b.tx = 0; b.tz = 0;
-    lineEl.textContent = 'too slow.'; subEl.textContent = 'it expired anyway.';
+    lineEl.textContent = 'too slow. it expired anyway.';
     waiting = true; setTimeout(() => { waiting = false; next(); }, 1100); return;
   }
   if (S.fx === 'hydra' && hydraTaps < 2) {
@@ -770,11 +774,11 @@ function onPress(b) {
     const n = buttons.length, cols = n === 2 ? 2 : 2, rows = n / cols;
     const gx = Math.min(view.halfW * .36, 3.4), gz = view.halfH * .26, t = n === 2 ? (view.narrow ? .68 : .8) : (view.narrow ? .5 : .6);
     buttons.forEach((o, i) => { const c = i % cols, r = Math.floor(i / cols); o.tx = (c ? 1 : -1) * gx; o.tz = rows > 1 ? (r ? 1 : -1) * gz : 0; o.ts = t; });
-    lineEl.textContent = hydraTaps === 1 ? 'sure sure sure?' : 'SURE?';
+    lineEl.textContent = hydraTaps === 1 ? 'charged twice.' : 'four times.';
     return;
   }
   if (S.fx === 'hacks' && hackTaps < HACKS.length) {
-    lineEl.textContent = HACKS[hackTaps][0]; subEl.textContent = HACKS[hackTaps][1]; hackTaps++;
+    lineEl.textContent = HACKS[hackTaps]; hackTaps++;
     b.shake = .6; SFX.nope();
     const rx = Math.min(view.halfW * .34, 3.2); b.tx = (Math.random() * 2 - 1) * rx; b.tz = (Math.random() * 2 - 1) * view.halfH * .14; b.ts = view.narrow ? .55 + Math.random() * .3 : .75 + Math.random() * .3;
     return;
@@ -785,7 +789,7 @@ function onPress(b) {
     if (gridTaps < GRID_TAPS) {
       b.tgrey = 1; b.shake = .6; setTimeout(SFX.nope, 60);
       lineEl.textContent = nopes[(gridTaps - 1) % nopes.length];
-      subEl.textContent = `${40 - gridTaps} to go.`;
+      subEl.textContent = '';
       buttons.forEach(o => { if (o !== b) o.shake = Math.max(o.shake, .22); });
       return;
     }
@@ -811,7 +815,7 @@ const letGo = () => {
   const b = buttons[0];
   if (!b || !b.holding) return;
   b.holding = false; clearTimeout(holdT); holdT = null;
-  if (STEPS[step].fx === 'hold') { lineEl.textContent = 'you let go.'; subEl.textContent = 'back to day 1. press and hold.'; b.tgrey = .25; SFX.nope(); }
+  if (STEPS[step].fx === 'hold') { lineEl.textContent = 'you let go. back to day 1.'; b.tgrey = .25; SFX.nope(); }
 };
 addEventListener('pointerup', letGo); addEventListener('pointercancel', letGo);
 // The escape hatch: if you're still going after a while, a tiny button shows up in the corner. It's the real one.
@@ -845,21 +849,48 @@ function finish() {
 }
 function buildEnd() {
   const path = PATHS[method] || PATHS.card;
-  $('#recap').textContent = `You pressed it ${presses} times and found ${fears.size} of ${FEARS_TOTAL} things that go wrong. Here's what was actually going on.`;
+  makeScore();
   $('#secsub').textContent = `Your ${amount} for ${USES[useCase] || 'an app'}, by ${method}. Nine steps, in order.`;
   const ol = $('#steps'); ol.innerHTML = '';
   FLOW.forEach((F, i) => {
     const li = document.createElement('li');
     li.className = 'step' + (F.core ? ' core' : '');
     const hits = pins.filter(p => p.layer === F.id).map(p => p.t);
-    const rows = `<div class="row"><span class="k">for you</span><span class="v">${path[F.id]}</span></div>`
-      + (hits.length ? `<div class="row bad"><span class="k">you hit</span><span class="v">${hits.join(' · ')}</span></div>` : '');
+    const rows = `<div class="row good"><span class="k">for you</span><span class="v">${path[F.id]}</span></div>`
+      + (hits.length ? `<div class="row bad"><span class="k">you got</span><span class="v">${hits.join(' · ')}</span></div>` : '');
     li.innerHTML = `<span class="num">${i + 1}</span>` + (F.core
       ? `<div class="card"><h3>${F.title}</h3><p class="what">${F.what}</p>${rows}<span class="missing">the step that was missing</span></div>`
       : `<h3>${F.title}</h3><p class="what">${F.what}</p>${rows}`);
     ol.appendChild(li);
   });
   $('#stats').textContent = lifetime > presses ? `${lifetime} presses on this device, all time.` : '';
+}
+// The score card: drawn once, shown on the page, and the exact image people share.
+let scoreBlob = null;
+const btnImg = new Image(); btnImg.src = 'button.png';
+async function makeScore() {
+  const total = new Set(STEPS.filter(x => x.fear).map(x => x.fear)).size || fears.size;
+  try { await document.fonts.ready; } catch (e) {}
+  if (!btnImg.complete) await new Promise(r => { btnImg.onload = btnImg.onerror = r; });
+  const S = 1080, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, S, S); g.addColorStop(0, '#fff1a8'); g.addColorStop(.55, '#ffd1e6'); g.addColorStop(1, '#c9e4ff');
+  x.fillStyle = g; x.fillRect(0, 0, S, S);
+  const cols = ['#ff5c8a', '#ffd23f', '#3bceac', '#4d9fff', '#b388ff', '#ff9f43', '#7ae582'];
+  let seed = presses * 7919 + 13; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 46; i++) {
+    const px = rnd() * S, py = rnd() * S; if (py > 250 && py < 960 && px > 150 && px < 930) continue;
+    x.save(); x.translate(px, py); x.rotate(rnd() * 3.14); x.fillStyle = cols[i % cols.length]; x.fillRect(-11, -5, 22, 10); x.restore();
+  }
+  const F = '"Inter Tight", "Helvetica Neue", Arial, sans-serif';
+  x.fillStyle = '#111'; x.textAlign = 'center';
+  x.font = `700 40px ${F}`; x.fillText('do not press', S / 2, 104);
+  if (btnImg.naturalWidth) { const w = 380, h = w * btnImg.naturalHeight / btnImg.naturalWidth; x.drawImage(btnImg, (S - w) / 2, 150, w, h); }
+  x.font = `900 250px ${F}`; x.fillText(String(presses), S / 2, 690);
+  x.font = `900 58px ${F}`; x.fillText(`presses to deposit ${amount}.`, S / 2, 780);
+  x.font = `500 40px ${F}`; x.fillStyle = '#3d3a44'; x.fillText(`found ${fears.size} of ${total} ways it goes wrong.`, S / 2, 850);
+  x.font = `700 34px ${F}`; x.fillStyle = '#111'; x.fillText('redbutton.emilylai.com', S / 2, 1010);
+  $('#scoreImg').src = c.toDataURL('image/png');
+  scoreBlob = await new Promise(r => c.toBlob(r, 'image/png'));
 }
 function animateEnd() {
   [...document.querySelectorAll('.step')].forEach((c, i) => setTimeout(() => c.classList.add('in'), 250 + i * 140));
@@ -910,11 +941,16 @@ function confetti(ox, oy, n = 180) {
 }
 
 $('#share').addEventListener('click', async () => {
-  const text = `i pressed the button ${presses} times trying to deposit ${amount}.`;
-  const url = 'https://redbutton.emilylai.com';
+  const text = `i pressed the button ${presses} times trying to deposit ${amount}. redbutton.emilylai.com`;
   track('share', { presses, amount });
-  try { if (navigator.share) { await navigator.share({ title: 'do not press', text, url }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
-  try { await navigator.clipboard.writeText(`${text} ${url}`); $('#copied').textContent = 'copied. go post it.'; } catch (e) { $('#copied').textContent = `${text} ${url}`; }
+  const file = scoreBlob ? new File([scoreBlob], 'do-not-press-score.png', { type: 'image/png' }) : null;
+  try {
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; }
+    if (navigator.share) { await navigator.share({ title: 'do not press', text, url: 'https://redbutton.emilylai.com' }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  // desktop: save the card and copy the line.
+  if (scoreBlob) { const a = document.createElement('a'); a.href = URL.createObjectURL(scoreBlob); a.download = 'do-not-press-score.png'; a.click(); }
+  try { await navigator.clipboard.writeText(text); $('#copied').textContent = 'card saved. caption copied. go post it.'; } catch (e) { $('#copied').textContent = 'card saved. ' + text; }
 });
 $('#again').addEventListener('click', () => {
   clearInterval(wordTimer); $('#depositNow').style.display = ''; $('#started').classList.remove('show');
