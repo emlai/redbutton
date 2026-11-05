@@ -46,7 +46,8 @@
   #hits { position:absolute; left:0; right:0; top:12svh; height:60svh; }
   .hit { position:absolute; border-radius:50%; transform:translate(-50%,-50%); cursor:pointer; display:grid; place-items:center; touch-action:manipulation; }
   .hit .lab .funlogo { height:1.5em; width:auto; display:block; color:#111; margin-top:2px; }
-  .hit.party .lab { font-size:clamp(22px,6vw,30px); margin-top:4px; }
+  #line .inlogo { display:inline-block; vertical-align:-.12em; }
+  #line .inlogo .funlogo { height:.95em; width:auto; display:block; color:#111; }
   .hit .lab { position:absolute; top:100%; margin-top:6px; font-weight:900; font-size:clamp(16px,4.4vw,22px); white-space:nowrap; letter-spacing:-.01em; pointer-events:none; }
   .hit .lock { position:absolute; width:30%; height:30%; right:6%; top:2%; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
   .nogl .hit { background:radial-gradient(circle at 42% 35%, #ff6a5c 0, #e3150c 38%, #b40c05 75%, #7a0603 100%); box-shadow:0 10px 18px -6px rgba(0,0,0,.45), inset 0 -6px 10px rgba(80,0,0,.45); }
@@ -60,7 +61,7 @@
   #line.tiny { font-size:9px; letter-spacing:0; font-weight:500; }
   #sub { position:absolute; left:0; right:0; top:calc(73svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
   #dot { position:absolute; width:44px; height:44px; transform:translate(-50%,-50%); display:none; cursor:pointer; border:0; background:none; padding:0; }
-  #dot::after { content:""; position:absolute; left:50%; top:50%; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; border-radius:50%;
+  #dot::after { content:""; position:absolute; left:50%; top:50%; width:var(--d,9px); height:var(--d,9px); transform:translate(-50%,-50%); border-radius:50%;
     background:radial-gradient(circle at 40% 35%, #ff7a6e, #d8130a 60%, #8d0703); box-shadow:0 1px 2px rgba(0,0,0,.4); }
   #snd { position:absolute; right:max(10px, env(safe-area-inset-right)); top:max(10px, env(safe-area-inset-top)); width:40px; height:40px; border:0; background:none; padding:8px; color:#b9b9b4; cursor:pointer; z-index:5; }
   #snd svg { width:100%; height:100%; display:block; }
@@ -192,21 +193,23 @@
 // Act 0: the hook. Act 1: amount and method. Act 2: one mini-run per pain,
 // starting with the method you picked. Act 3: the 40 buttons, the fine print, the hint.
 const INTRO = [
-  { id:'intro', line:'', sub:'do not press.', fx:'single', headline:true },
+  { id:'intro', line:'', fx:'single', headline:true },
   { line:'you pressed it.', fx:'single' },
   { line:'are you sure?', fx:'grow' },
   { line:'like, sure sure?', fx:'nudge' },
   { line:"what if it's locked for 3 days?", fx:'lock' },
-  { line:"what if you can't get it back out?", sub:'catch it.', fx:'chase' },
+  { line:"what if you can't get it back out?", fx:'chase' },
   { line:'what if the app just disappears?', fx:'vanish' },
   { line:'what are you even trying to do?', fx:'use4' },
   { line:'are you sure this is a real site?', sub:"make sure it's not a phishing link!", fx:'decoy3', fear:'fake site' },
+  { line:'be careful.', sub:'lots of hacks this year.', fx:'hacks' },
   { line:'ok. how much?', fx:'split3' },
+  { line:() => AMOUNT_TAKES[amount][0], sub:() => AMOUNT_TAKES[amount][1], fx:'single' },
   { line:'how are you paying?', fx:'method3' }
 ];
 const SEQ = {
   card: [
-    { line:'declined.', sub:'your bank thinks you bought cash.', fx:'shudder', fear:'declined', pin:{layer:'rails', t:'card declined'} },
+    { line:'declined.', sub:"your bank doesn't recognize this transaction.", fx:'shudder', fear:'declined', pin:{layer:'rails', t:'card declined'} },
     { line:'try again?', fx:'dodge' },
     { line:'check your banking app.', fx:'pulse', fear:'check your app' },
     { line:'code expired.', fx:'grey' },
@@ -255,8 +258,11 @@ const OUTRO = [
   { line:'terms and conditions apply.', fx:'single', text:'upside', fear:'fine print' },
   { line:'you agreed to this.', fx:'single', text:'tiny' },
   { line:'', fx:'colors' },
+  { line:'just kidding.', fx:'fade' },
+  { line:"you're having the worst time right now.", fx:'single' },
+  { line:() => `you just wanted to ${WANTED[useCase] || 'deposit'}.`, fx:'single' },
   { line:"there's a better way.", fx:'single' },
-  { line:"it's been here the whole time.", fx:'single', dot:true },
+  { line:"it's been here the whole time.", fx:'single', dot:true, dotI:true },
   { line:'look harder.', fx:'single', dot:true },
   { line:'', fx:'single', dot:true },
   { line:'', fx:'single', dot:true },
@@ -274,7 +280,8 @@ const FUN_LOGO = '<svg class="funlogo" viewBox="34 22 406 120" aria-label="Fun" 
   '<g transform="translate(333.205 96.804) scale(2.4556)"><path fill="currentColor" d="M11.785-12.905H5.574V.28C5.574 5.065 3.691 7.356-.229 7.356C-3.691 7.356-5.574 5.421-5.574.636V-12.905H-11.785V2.825C-11.785 8.985-8.374 12.905-2.571 12.905C.789 12.905 4.047 11.276 5.574 8.883L6.033 12.243H11.785Z"/></g>' +
   '<g transform="translate(405.711 95.052) scale(2.4556)"><path fill="currentColor" d="M-11.938 12.956H-5.727V-.585C-5.727-4.658-3.385-7.305.433-7.305C3.64-7.305 5.727-5.269 5.727-1.044V12.956H11.938V-2.52C11.938-9.036 8.68-12.956 2.367-12.956C-1.044-12.956-4.098-11.479-5.676-8.934L-6.185-12.192H-11.938Z"/></g></svg>';
 
-let STEPS = [];
+let STEPS = [], hackTaps = 0, burstTaps = 0;
+const CARD_NOPES = ["nope. that card doesn't work.", 'expired.', 'maxed out.'];
 function buildSteps(method) {
   const order = ORDER[method] || ORDER.card;
   STEPS = [...INTRO];
@@ -301,6 +308,9 @@ const PATHS = {
   bank:   { button:'one tap', routing:'picks the bank rail your bank actually allows', sources:'your bank account', connect:'one bank link', rails:'the local bank transfer for your country', risk:'one identity check', convert:'your currency to USDC', settle:'credited before the transfer settles', app:'ready to use' },
   crypto: { button:'one tap', routing:'takes the token you have, not the one it wanted', sources:'your exchange or wallet', connect:'one deposit address', rails:'a stablecoin transfer', risk:'one wallet screening', convert:'any chain you sent from, handled', settle:'USDC', app:'ready to use' }
 };
+const AMOUNT_TAKES = { '$50':['testing the waters?', 'smart. this might not work.'], '$500':['$500. very reasonable.', 'nothing about this will be.'], '$5,000':['on a first time deposit?', 'ok, risk on.'] };
+const WANTED = { 'gamble':'gamble', 'buy stocks':'buy stocks', 'trade predictions':'trade', 'rip packs':'rip some packs' };
+const HACKS = [['fake login pages.', 'wallet drainers.'], ['address poisoning.', 'one wrong character and it’s gone.'], ['fake support DMs.', 'SIM swaps. fake airdrops.']];
 const USES = { 'gamble':'a bet', 'buy stocks':'stocks', 'trade predictions':'a prediction market', 'rip packs':'card packs' };
 
 /* =========================================================================
@@ -400,7 +410,7 @@ function setLock(b, on) {
 
 /* ---------- layouts ---------- */
 function layout(fx) {
-  const keep = buttons.length === 1 && ['single','shudder','grey','shrink1','shrink2','dot','hop1','hop2','hop3','lock','dodge','nudge','fade','pulse','left','right','blink','grow','chase','orbit','ring','vanish','sleep','blur'].includes(fx);
+  const keep = buttons.length === 1 && ['single','shudder','grey','shrink1','shrink2','dot','hop1','hop2','hop3','lock','dodge','nudge','fade','pulse','left','right','blink','grow','chase','orbit','ring','vanish','sleep','blur','hacks'].includes(fx);
   if (!keep) { clearButtons(); }
   if (fx === 'burst') {
     // the card button explodes into a pile of cards, all different sizes.
@@ -420,16 +430,15 @@ function layout(fx) {
   }
   if (fx === 'colors') {
     // a little party: four colours, four sizes, one sentence.
-    const C = [[.97, .7, .02], [.1, .34, .96], [.06, .62, .3], [.05, .05, .055]];
-    const words = ["let's", 'have', 'some', null];
+    const C = [[.98, .78, .05], [.98, .36, .62], [.16, .5, .98], [.12, .78, .45]];
+    const words = [null, null, null, null];
     const wide = view.halfW > 4.6;
-    const sizes = wide ? [.56, .74, .6, .95] : [.56, .72, .6, .86];
-    const pos = wide ? [[-1.5, .35], [-.5, -.45], [.5, .45], [1.55, -.25]].map(p => [p[0] * Math.min(3.4, view.halfW * .27), p[1] * view.halfH * .7])
-                     : [[-.45, -.42], [.43, -.38], [-.43, .34], [.42, .4]].map(p => [p[0] * view.halfW, p[1] * view.halfH]);
+    const sizes = wide ? [.72, .72, .72, .72] : [.62, .62, .62, .62];
+    const pos = wide ? [[-1.5, .12], [-.5, -.12], [.5, .12], [1.5, -.12]].map(p => [p[0] * Math.min(3.4, view.halfW * .27), p[1] * view.halfH])
+                     : [[-.44, -.34], [.44, -.34], [-.44, .3], [.44, .3]].map(p => [p[0] * view.halfW, p[1] * view.halfH]);
     words.forEach((w, i) => {
       const b = makeButton(); b.base = C[i]; b.x = 0; b.z = 0; b.s = .05; b.tx = pos[i][0]; b.tz = pos[i][1]; b.ts = sizes[i];
-      if (w) setLabel(b, w); else setLabelHTML(b, FUN_LOGO);
-      b.value = w || 'fun'; b.phase = i * 1.7; b.el.classList.add('party');
+      b.value = 'fun'; b.phase = i * 1.7;
       setTimeout(() => { b.pop = 1; SFX.pick(); }, 120 + i * 140);
     });
     return;
@@ -465,6 +474,7 @@ function layout(fx) {
   if (!keep) { b.x = b.tx = 0; b.z = b.tz = 0; b.s = .3; }
   b.wander = fx === 'chase'; b.orbit = fx === 'orbit'; b.ring = fx === 'ring'; b.wNext = 0; b.base = [.74, .02, .015];
   wrap.style.filter = fx === 'blur' ? 'blur(7px)' : '';
+  if (fx === 'hacks') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? .8 : 1; }
   if (fx === 'grow') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? 1.22 : 1.4; }
   if (fx === 'chase' || fx === 'orbit') b.ts = view.narrow ? .5 : .75;
   if (fx === 'ring') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? .75 : 1; }
@@ -651,7 +661,12 @@ function showStep(i) {
   step = i; const S = STEPS[i];
   headEl.style.opacity = S.headline ? 1 : 0;
   lineEl.className = S.text || '';
-  lineEl.textContent = S.line; subEl.textContent = S.sub || '';
+  if (S.fx === 'colors') lineEl.innerHTML = `let's have some <span class="inlogo">${FUN_LOGO}</span>`;
+  else if (S.dotI) lineEl.innerHTML = '<span class="di">ı</span>' + S.line.slice(1);
+  else lineEl.textContent = typeof S.line === 'function' ? S.line() : S.line;
+  subEl.textContent = typeof S.sub === 'function' ? S.sub() : (S.sub || '');
+  if (S.fx === 'hacks') hackTaps = 0;
+  if (S.fx === 'burst') burstTaps = 0;
   if (S.fear) { fears.add(S.fear); }
   if (S.pin && !pins.find(p => p.t === S.pin.t)) pins.push(S.pin);
   if (S.dot) placeDot();
@@ -661,10 +676,15 @@ function showStep(i) {
   layout(S.fx);
 }
 function placeDot() {
-  // Right under your nose: just below the line of text, slightly off-centre.
+  // Right under your nose: the dot on the i. It stays put after the text changes.
+  const di = lineEl.querySelector('.di');
+  if (di) {
+    const g = $('#game').getBoundingClientRect(), r = di.getBoundingClientRect(), fs = parseFloat(getComputedStyle(lineEl).fontSize);
+    dotEl.style.left = (r.left - g.left + r.width / 2) + 'px';
+    dotEl.style.top = (r.top - g.top + r.height / 2 - fs * .43) + 'px';
+    dotEl.style.setProperty('--d', Math.max(6, Math.round(fs * .2)) + 'px');
+  } else if (!dotShown) { dotEl.style.left = '57%'; dotEl.style.top = 'calc(73svh + 3.9em)'; }
   dotShown = true;
-  dotEl.style.left = (50 + 7) + '%';
-  dotEl.style.top = 'calc(73svh + 3.9em)';
 }
 function next() {
   const S = STEPS[step];
@@ -679,7 +699,13 @@ function onPress(b) {
   const S = STEPS[step];
   if (['split3','method3','use4','chain4','colors'].includes(S.fx)) SFX.pick(); else SFX.press(presses);
   if (S.fx === 'colors') { buttons.forEach(o => { if (o !== b) { o.ts = .001; } }); b.ts *= 1.3; waiting = true; setTimeout(() => { waiting = false; next(); }, 450); return; }
-  if (S.fx === 'burst') { b.ts = .001; }
+  if (S.fx === 'burst') {
+    if (b.tgrey > .5) { lineEl.textContent = 'still no.'; subEl.textContent = ''; b.shake = .5; SFX.nope(); return; }
+    burstTaps++; b.tgrey = 1; b.shake = .7; setTimeout(SFX.nope, 60);
+    lineEl.textContent = CARD_NOPES[burstTaps - 1]; subEl.textContent = '';
+    if (burstTaps < CARD_NOPES.length) return;
+    waiting = true; setTimeout(() => { waiting = false; next(); }, 850); return;
+  }
   if (S.fx === 'split3') { amount = b.value; track('pick_amount', { amount: b.value }); }
   if (S.fx === 'method3') { method = b.value; buildSteps(method); track('pick_method', { method: b.value }); }
   if (S.fx === 'use4') { useCase = b.value; track('pick_use', { use: b.value }); }
@@ -689,10 +715,16 @@ function onPress(b) {
     if (idx !== realIdx) {
       b.tgrey = 1; b.shake = .7; SFX.nope();
       const wrong = buttons.filter(x => x.tgrey > .5).length;
-      lineEl.textContent = wrong > 1 ? 'also fake.' : "nope. that one's fake.";
+      lineEl.textContent = wrong > 1 ? 'also phishing.' : "oh, that's a phishing site.";
       subEl.textContent = '';
       return;
     }
+  }
+  if (S.fx === 'hacks' && hackTaps < HACKS.length) {
+    lineEl.textContent = HACKS[hackTaps][0]; subEl.textContent = HACKS[hackTaps][1]; hackTaps++;
+    b.shake = .6; SFX.nope();
+    const rx = Math.min(view.halfW * .34, 3.2); b.tx = (Math.random() * 2 - 1) * rx; b.tz = (Math.random() * 2 - 1) * view.halfH * .14; b.ts = view.narrow ? .55 + Math.random() * .3 : .75 + Math.random() * .3;
+    return;
   }
   if (S.fx === 'grid') {
     if (b.tgrey > .5) { lineEl.textContent = 'still no.'; subEl.textContent = ''; b.shake = .5; SFX.nope(); return; }
@@ -779,7 +811,7 @@ function confetti(ox, oy, n = 180) {
   const run = ++confettiRun;
   const c = $('#confetti'), x = c.getContext('2d'), dpr = Math.min(devicePixelRatio, 2);
   c.width = innerWidth * dpr; c.height = innerHeight * dpr; x.scale(dpr, dpr);
-  const colors = ['#d8130a', '#111111', '#ffffff', '#ffb3ab', '#f2c94c'];
+  const colors = ['#ff5c8a', '#ffd23f', '#3bceac', '#4d9fff', '#b388ff', '#ff9f43', '#7ae582', '#ff6b6b', '#ffb3d9', '#9be7ff'];
   if (ox == null) { const ob = $('#depositNow').getBoundingClientRect(); ox = ob.left + ob.width / 2 || innerWidth / 2; oy = ob.top + ob.height * .35 || innerHeight * .6; }
   const P = Array.from({ length: n }, () => ({
     x: ox + (Math.random() - .5) * 80, y: Math.min(innerHeight * .8, oy),
