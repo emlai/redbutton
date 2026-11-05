@@ -61,6 +61,8 @@
   #line.tiny { font-size:9px; letter-spacing:0; font-weight:500; }
   #sub { position:absolute; left:0; right:0; top:calc(73svh + 2.6em); text-align:center; padding:0 28px; font-weight:500; font-size:clamp(13px,3.6vw,16px); color:#555; }
   #dot { position:absolute; width:44px; height:44px; transform:translate(-50%,-50%); display:none; cursor:pointer; border:0; background:none; padding:0; }
+  #dot.peek::after { animation:peek 2.4s ease-in-out infinite; }
+  @keyframes peek { 0%,80%,100% { transform:translate(-50%,-50%) scale(1); } 88% { transform:translate(-50%,-50%) scale(1.6); } }
   #dot::after { content:""; position:absolute; left:50%; top:50%; width:var(--d,9px); height:var(--d,9px); transform:translate(-50%,-50%); border-radius:50%;
     background:radial-gradient(circle at 40% 35%, #ff7a6e, #d8130a 60%, #8d0703); box-shadow:0 1px 2px rgba(0,0,0,.4); }
   #snd { position:absolute; right:max(10px, env(safe-area-inset-right)); top:max(10px, env(safe-area-inset-top)); width:40px; height:40px; border:0; background:none; padding:8px; color:#b9b9b4; cursor:pointer; z-index:5; }
@@ -113,6 +115,10 @@
   .word.in { animation:wordIn .32s cubic-bezier(.2,.9,.3,1.4); }
   @keyframes wordIn { from { transform:translateY(45%) rotateX(-75deg); opacity:0; } to { transform:none; opacity:1; } }
   #confetti { position:fixed; inset:0; width:100vw; height:100vh; pointer-events:none; z-index:30; }
+  .endbtns { display:flex; gap:10px; flex-wrap:wrap; margin-top:26px; }
+  .endbtns .again { margin-top:0; }
+  .share { border:0; background:#111; color:#fff; font-weight:700; font-size:15px; padding:12px 20px; border-radius:999px; cursor:pointer; }
+  .copied { margin:10px 0 0; font-size:14px; color:var(--muted); min-height:1.2em; }
   .again { margin-top:26px; border:1px solid #ddd; background:#fff; color:#111; font-weight:700; font-size:15px; padding:11px 20px; border-radius:999px; cursor:pointer; }
   .stats { margin:14px 0 0; font-weight:500; font-size:14px; color:var(--muted); }
   details { margin-top:36px; border-top:1px solid #ebe9e4; padding-top:16px; font-size:14px; color:#555; }
@@ -170,7 +176,8 @@
     <p class="started" id="started" aria-live="polite">Start <span class="word" id="word">trading</span></p>
   </div>
 
-  <button class="again" id="again">start over</button>
+  <div class="endbtns"><button class="share" id="share">share your score</button><button class="again" id="again">start over</button></div>
+  <p class="copied" id="copied" aria-live="polite"></p>
   <p class="stats" id="stats"></p>
 
   <details>
@@ -196,7 +203,7 @@ const INTRO = [
   { id:'intro', line:'', fx:'single', headline:true },
   { line:'you pressed it.', fx:'single' },
   { line:'are you sure?', fx:'grow' },
-  { line:'like, sure sure?', fx:'nudge' },
+  { line:'like, sure sure?', fx:'hydra' },
   { line:"what if it's locked for 3 days?", fx:'lock' },
   { line:"what if you can't get it back out?", fx:'chase' },
   { line:'what if the app just disappears?', fx:'vanish' },
@@ -212,7 +219,7 @@ const SEQ = {
     { line:'declined.', sub:"your bank doesn't recognize this transaction.", fx:'shudder', fear:'declined', pin:{layer:'rails', t:'card declined'} },
     { line:'try again?', fx:'dodge' },
     { line:'check your banking app.', fx:'pulse', fear:'check your app' },
-    { line:'code expired.', fx:'grey' },
+    { line:'enter the code.', fx:'timer' },
     { line:'try a different card.', fx:'burst' },
     { line:'declined.', sub:'again.', fx:'shudder' }
   ],
@@ -220,23 +227,17 @@ const SEQ = {
     { line:'please verify your identity.', fx:'shrink1', fear:'verify', pin:{layer:'risk', t:'verify your identity'} },
     { line:'take a photo of your passport.', fx:'single' },
     { line:'declined.', sub:'your photo is blurry.', fx:'blur' },
-    { line:'try again?', fx:'single' },
-    { line:'ok. selfie time.', fx:'single' },
-    { line:'turn your head left.', fx:'left' },
+    { line:'ok. selfie time.', sub:'turn your head left.', fx:'left' },
     { line:'turn your head right.', fx:'right' },
     { line:'blink.', fx:'blink' },
-    { line:'verification pending.', fx:'grey' },
-    { line:'one more selfie.', fx:'dot' },
     { line:'verified.', sub:'now do it again for the on-ramp.', fx:'single', fear:'verify again', pin:{layer:'risk', t:'verified twice'} }
   ],
   bank: [
-    { line:'pending.', sub:'day 1.', fx:'sleep', fear:'pending', pin:{layer:'rails', t:'pending for 59 days'} },
-    { line:'still pending.', sub:'day 2.', fx:'sleep' },
+    { line:'pending.', sub:'press and hold. day 1.', fx:'hold', fear:'pending', pin:{layer:'rails', t:'pending for 59 days'} },
     { line:"oh, it's the weekend.", sub:'banks are closed.', fx:'lock', fear:'weekend' },
     { line:'day 59.', sub:'(a bank pull can still come back for 60 days)', fx:'grey' },
     { line:'your bank said no.', fx:'shudder', fear:'bank said no', pin:{layer:'sources', t:'your bank said no'} },
     { line:'call your bank.', fx:'ring' },
-    { line:'your call is important to us.', fx:'pulse' },
     { line:'your call is very important to us.', fx:'ring' }
   ],
   crypto: [
@@ -250,7 +251,7 @@ const SEQ = {
     { line:'minimum deposit not met.', sub:'the fees took you under it.', fx:'dot', fear:'below minimum', pin:{layer:'convert', t:'fees ate the minimum'} }
   ]
 };
-const ORDER = { card:['card','id','bank','crypto'], bank:['bank','id','card','crypto'], crypto:['crypto','id','card','bank'] };
+const ORDER = { card:['card','id','bank'], bank:['bank','id','card'], crypto:['crypto','id','card'] };
 const LEAD = { card:{ line:'ok. try a card.', fx:'single' }, id:{ line:'first, a few checks.', fx:'single' }, bank:{ line:'ok. try your bank.', fx:'single' }, crypto:{ line:'ok. try crypto.', fx:'single' } };
 const OUTRO = [
   { line:'pick a payment method.', sub:'tap one.', fx:'grid', fear:'40 options', pin:{layer:'routing', t:'40 options, nothing picked for you'} },
@@ -280,13 +281,15 @@ const FUN_LOGO = '<svg class="funlogo" viewBox="34 22 406 120" aria-label="Fun" 
   '<g transform="translate(333.205 96.804) scale(2.4556)"><path fill="currentColor" d="M11.785-12.905H5.574V.28C5.574 5.065 3.691 7.356-.229 7.356C-3.691 7.356-5.574 5.421-5.574.636V-12.905H-11.785V2.825C-11.785 8.985-8.374 12.905-2.571 12.905C.789 12.905 4.047 11.276 5.574 8.883L6.033 12.243H11.785Z"/></g>' +
   '<g transform="translate(405.711 95.052) scale(2.4556)"><path fill="currentColor" d="M-11.938 12.956H-5.727V-.585C-5.727-4.658-3.385-7.305.433-7.305C3.64-7.305 5.727-5.269 5.727-1.044V12.956H11.938V-2.52C11.938-9.036 8.68-12.956 2.367-12.956C-1.044-12.956-4.098-11.479-5.676-8.934L-6.185-12.192H-11.938Z"/></g></svg>';
 
-let STEPS = [], hackTaps = 0, burstTaps = 0;
+let STEPS = [], hackTaps = 0, burstTaps = 0, hydraTaps = 0, holdT = null, timerT = null, escaped = false;
+const secSeen = new Set();
 const CARD_NOPES = ["nope. that card doesn't work.", 'expired.', 'maxed out.'];
 function buildSteps(method) {
   const order = ORDER[method] || ORDER.card;
   STEPS = [...INTRO];
-  order.forEach((k, i) => { if (i) STEPS.push(LEAD[k]); STEPS.push(...SEQ[k]); });
-  STEPS.push(...OUTRO);
+  order.forEach((k, i) => { if (i) STEPS.push({ ...LEAD[k], sec:k }); else STEPS.push({ ...SEQ[k][0], sec:k }); STEPS.push(...SEQ[k].slice(i ? 0 : 1)); });
+  STEPS.push({ ...OUTRO[0], sec:'outro' }, ...OUTRO.slice(1));
+  STEPS[7] = { ...STEPS[7], sec:'intro_done' };
 }
 buildSteps('card');
 const FEARS_TOTAL = [...INTRO, ...Object.values(SEQ).flat(), ...OUTRO].filter(s => s.fear).length;
@@ -410,7 +413,7 @@ function setLock(b, on) {
 
 /* ---------- layouts ---------- */
 function layout(fx) {
-  const keep = buttons.length === 1 && ['single','shudder','grey','shrink1','shrink2','dot','hop1','hop2','hop3','lock','dodge','nudge','fade','pulse','left','right','blink','grow','chase','orbit','ring','vanish','sleep','blur','hacks'].includes(fx);
+  const keep = buttons.length === 1 && ['single','shudder','grey','shrink1','shrink2','dot','hop1','hop2','hop3','lock','dodge','nudge','fade','pulse','left','right','blink','grow','chase','orbit','ring','vanish','sleep','blur','hacks','hold','timer'].includes(fx);
   if (!keep) { clearButtons(); }
   if (fx === 'burst') {
     // the card button explodes into a pile of cards, all different sizes.
@@ -426,6 +429,10 @@ function layout(fx) {
       const b = makeButton(); b.x = 0; b.z = 0; b.s = .05; b.tx = x; b.tz = z; b.ts = t; b.vx = x * 6; b.vz = z * 6; b.phase = Math.random() * 6;
     }
     SFX.boom();
+    return;
+  }
+  if (fx === 'hydra') {
+    const b = makeButton(); b.s = .4; b.ts = view.narrow ? .9 : 1; b.x = b.tx = 0; b.z = b.tz = 0;
     return;
   }
   if (fx === 'colors') {
@@ -472,9 +479,11 @@ function layout(fx) {
   }
   let b = buttons[0] || makeButton();
   if (!keep) { b.x = b.tx = 0; b.z = b.tz = 0; b.s = .3; }
-  b.wander = fx === 'chase'; b.orbit = fx === 'orbit'; b.ring = fx === 'ring'; b.wNext = 0; b.base = [.74, .02, .015];
+  b.wander = fx === 'chase' || fx === 'timer'; b.orbit = fx === 'orbit'; b.ring = fx === 'ring'; b.wNext = 0; b.base = [.74, .02, .015];
   wrap.style.filter = fx === 'blur' ? 'blur(7px)' : '';
   if (fx === 'hacks') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? .8 : 1; }
+  if (fx === 'hold') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? .9 : 1.1; b.tgrey = .25; }
+  if (fx === 'timer') b.ts = view.narrow ? .55 : .8;
   if (fx === 'grow') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? 1.22 : 1.4; }
   if (fx === 'chase' || fx === 'orbit') b.ts = view.narrow ? .5 : .75;
   if (fx === 'ring') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? .75 : 1; }
@@ -557,7 +566,7 @@ function frame(now) {
     b.vz += ((b.tz - b.z) * 170 - b.vz * 15) * sdt; b.z += b.vz * sdt;
     b.vs += ((b.ts - b.s) * 210 - b.vs * 13) * sdt; b.s += b.vs * sdt;
     b.grey += (b.tgrey - b.grey) * k; b.pop = Math.max(0, b.pop - dt * 3.2);
-    b.press = Math.max(0, b.press - dt * 4.5);
+    b.press = b.holding ? .5 : Math.max(0, b.press - dt * 4.5);
     b.shake = Math.max(0, b.shake - dt * 1.8);
     const sx = b.shake ? Math.sin(now / 22) * .22 * b.shake : 0;
     const pressY = -Math.sin(Math.min(1, b.press) * Math.PI) * .2;
@@ -659,6 +668,7 @@ document.body.classList.add('playing');
    ========================================================================= */
 function showStep(i) {
   step = i; const S = STEPS[i];
+  if (S.sec && !secSeen.has(S.sec)) { secSeen.add(S.sec); track('section', { name: S.sec, presses }); }
   headEl.style.opacity = S.headline ? 1 : 0;
   lineEl.className = S.text || '';
   if (S.fx === 'colors') lineEl.innerHTML = `let's have some <span class="inlogo">${FUN_LOGO}</span>`;
@@ -667,6 +677,20 @@ function showStep(i) {
   subEl.textContent = typeof S.sub === 'function' ? S.sub() : (S.sub || '');
   if (S.fx === 'hacks') hackTaps = 0;
   if (S.fx === 'burst') burstTaps = 0;
+  if (S.fx === 'hydra') hydraTaps = 0;
+  clearTimeout(holdT); holdT = null; clearInterval(timerT); timerT = null;
+  if (S.fx === 'timer') {
+    let left = 5; subEl.textContent = `expires in ${left}.`;
+    timerT = setInterval(() => {
+      left--;
+      if (STEPS[step] !== S) { clearInterval(timerT); return; }
+      if (left > 0) { subEl.textContent = `expires in ${left}.`; buzz(8); return; }
+      clearInterval(timerT); timerT = null; lineEl.textContent = 'code expired.'; subEl.textContent = ''; SFX.nope();
+      if (buttons[0]) { buttons[0].wander = false; buttons[0].tgrey = 1; buttons[0].tx = 0; buttons[0].tz = 0; }
+      waiting = true; setTimeout(() => { waiting = false; next(); }, 1100);
+    }, 1000);
+  }
+  if (presses >= 38 && !dotShown && !escaped) showEscape();
   if (S.fear) { fears.add(S.fear); }
   if (S.pin && !pins.find(p => p.t === S.pin.t)) pins.push(S.pin);
   if (S.dot) placeDot();
@@ -682,7 +706,7 @@ function placeDot() {
     const g = $('#game').getBoundingClientRect(), r = di.getBoundingClientRect(), fs = parseFloat(getComputedStyle(lineEl).fontSize);
     dotEl.style.left = (r.left - g.left + r.width / 2) + 'px';
     dotEl.style.top = (r.top - g.top + r.height / 2 - fs * .43) + 'px';
-    dotEl.style.setProperty('--d', Math.max(6, Math.round(fs * .2)) + 'px');
+    dotEl.style.setProperty('--d', Math.max(6, Math.round(fs * .2)) + 'px'); dotEl.classList.remove('peek');
   } else if (!dotShown) { dotEl.style.left = '57%'; dotEl.style.top = 'calc(73svh + 3.9em)'; }
   dotShown = true;
 }
@@ -720,6 +744,35 @@ function onPress(b) {
       return;
     }
   }
+  if (S.fx === 'hold') {
+    if (b.holding) return;
+    b.holding = true; lineEl.textContent = 'holding…'; subEl.textContent = 'day 1.';
+    let d = 1;
+    const tick = () => {
+      if (!b.holding || STEPS[step] !== S) return;
+      d++; subEl.textContent = d < 4 ? `day ${d}.` : ''; buzz(10); tone('sine', 300 + d * 60, 300 + d * 60, .08, .15);
+      b.tgrey = Math.min(.9, .25 + d * .2);
+      if (d >= 4) { b.holding = false; holdT = null; lineEl.textContent = 'still pending.'; next(); return; }
+      holdT = setTimeout(tick, 700);
+    };
+    holdT = setTimeout(tick, 700);
+    return;
+  }
+  if (S.fx === 'timer') {
+    clearInterval(timerT); timerT = null; b.wander = false; b.tgrey = 1; b.tx = 0; b.tz = 0;
+    lineEl.textContent = 'too slow.'; subEl.textContent = 'it expired anyway.';
+    waiting = true; setTimeout(() => { waiting = false; next(); }, 1100); return;
+  }
+  if (S.fx === 'hydra' && hydraTaps < 2) {
+    hydraTaps++;
+    // every tap splits every button in two.
+    buttons.slice().forEach(o => { const c = makeButton(); c.x = o.x; c.z = o.z; c.s = o.s; c.pop = o.pop = 1; });
+    const n = buttons.length, cols = n === 2 ? 2 : 2, rows = n / cols;
+    const gx = Math.min(view.halfW * .36, 3.4), gz = view.halfH * .26, t = n === 2 ? (view.narrow ? .68 : .8) : (view.narrow ? .5 : .6);
+    buttons.forEach((o, i) => { const c = i % cols, r = Math.floor(i / cols); o.tx = (c ? 1 : -1) * gx; o.tz = rows > 1 ? (r ? 1 : -1) * gz : 0; o.ts = t; });
+    lineEl.textContent = hydraTaps === 1 ? 'sure sure sure?' : 'SURE?';
+    return;
+  }
   if (S.fx === 'hacks' && hackTaps < HACKS.length) {
     lineEl.textContent = HACKS[hackTaps][0]; subEl.textContent = HACKS[hackTaps][1]; hackTaps++;
     b.shake = .6; SFX.nope();
@@ -752,7 +805,31 @@ function onPress(b) {
 }
 
 /* ---------- the ending ---------- */
-dotEl.addEventListener('pointerdown', ev => { ev.preventDefault(); if (!ended) finish(); });
+dotEl.addEventListener('pointerdown', ev => { ev.preventDefault(); if (!ended) { if (escaped && !STEPS[step].dot) track('escape_hatch', { presses }); finish(); } });
+// let go too early and the transfer starts over.
+const letGo = () => {
+  const b = buttons[0];
+  if (!b || !b.holding) return;
+  b.holding = false; clearTimeout(holdT); holdT = null;
+  if (STEPS[step].fx === 'hold') { lineEl.textContent = 'you let go.'; subEl.textContent = 'back to day 1. press and hold.'; b.tgrey = .25; SFX.nope(); }
+};
+addEventListener('pointerup', letGo); addEventListener('pointercancel', letGo);
+// The escape hatch: if you're still going after a while, a tiny button shows up in the corner. It's the real one.
+function showEscape() {
+  escaped = true; dotShown = true;
+  dotEl.style.left = 'calc(100% - 34px)'; dotEl.style.top = 'calc(100% - 40px)'; dotEl.style.setProperty('--d', '10px');
+  dotEl.style.display = 'block'; dotEl.classList.add('peek');
+}
+// desktop: space or enter presses a button.
+addEventListener('keydown', e => {
+  if (ended || e.repeat || !(e.code === 'Space' || e.code === 'Enter')) return;
+  if (document.activeElement && document.activeElement.id === 'snd') return;
+  e.preventDefault();
+  const live = buttons.filter(b => b.ts > .05 && b.tgrey < .5);
+  const b = live.length === 1 ? live[0] : live[Math.floor(Math.random() * live.length)];
+  if (b) b.el.dispatchEvent(new PointerEvent('pointerdown', { bubbles:true }));
+});
+addEventListener('keyup', e => { if (e.code === 'Space' || e.code === 'Enter') letGo(); });
 function finish() {
   ended = true; presses++;
   track('found_button', { presses, fears: fears.size, amount, method, use: useCase });
@@ -832,9 +909,16 @@ function confetti(ox, oy, n = 180) {
   })(t0);
 }
 
+$('#share').addEventListener('click', async () => {
+  const text = `i pressed the button ${presses} times trying to deposit ${amount}.`;
+  const url = 'https://redbutton.emilylai.com';
+  track('share', { presses, amount });
+  try { if (navigator.share) { await navigator.share({ title: 'do not press', text, url }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(`${text} ${url}`); $('#copied').textContent = 'copied. go post it.'; } catch (e) { $('#copied').textContent = `${text} ${url}`; }
+});
 $('#again').addEventListener('click', () => {
   clearInterval(wordTimer); $('#depositNow').style.display = ''; $('#started').classList.remove('show');
-  ended = false; presses = 0; pins.length = 0; fears.clear(); amount = '$500'; method = 'card'; useCase = 'trade predictions'; buildSteps('card'); dotShown = false;
+  ended = false; escaped = false; dotEl.classList.remove('peek'); $('#copied').textContent = ''; presses = 0; pins.length = 0; fears.clear(); amount = '$500'; method = 'card'; useCase = 'trade predictions'; buildSteps('card'); dotShown = false;
   $('#end').classList.remove('show'); $('#game').style.display = ''; document.body.classList.add('playing');
 
   clearButtons(); showStep(0); resize();
