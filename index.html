@@ -120,7 +120,9 @@
   .depositNow span { display:block; margin-top:8px; font-weight:900; font-size:clamp(18px,4.8vw,22px); }
   .depositNow:active img, .depositNow.down img { transform:translateY(6px) scale(.97); filter:brightness(.92); }
   .started { display:none; margin:18px 0 0 !important; font-weight:900 !important; font-size:clamp(28px,7vw,40px) !important; letter-spacing:-.02em; color:#111 !important; line-height:1.1 !important; }
-  .started .word { color:#e5160b; background:none; padding:0; }
+  .started .word { color:transparent; padding:0 .04em; background:linear-gradient(90deg,#f0306f,#f27a00,#e0a800,#0fa88e,#2a74f0,#8a4dfa,#f0306f,#f27a00,#e0a800,#0fa88e,#2a74f0,#8a4dfa,#f0306f);
+    background-size:200% 100%; -webkit-background-clip:text; background-clip:text; animation:rainbow 1.6s linear infinite; }
+  .started .word.in { animation:wordIn .32s cubic-bezier(.2,.9,.3,1.4), rainbow 1.6s linear infinite; }
   .started.show { display:block; }
   .word { display:inline-block; color:var(--red); background:#fff; padding:0 10px; border-radius:8px; transition:transform .25s cubic-bezier(.2,.9,.3,1.4), opacity .2s; }
   .word.swap { transform:translateY(-45%) rotateX(75deg); opacity:0; }
