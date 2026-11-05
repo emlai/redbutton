@@ -45,8 +45,10 @@
   canvas { display:block; width:100%; height:100%; }
   #hits { position:absolute; left:0; right:0; top:12svh; height:60svh; }
   .hit { position:absolute; border-radius:50%; transform:translate(-50%,-50%); cursor:pointer; display:grid; place-items:center; touch-action:manipulation; }
+  .hit .lab .funlogo { height:1.5em; width:auto; display:block; color:#111; margin-top:2px; }
+  .hit.party .lab { font-size:clamp(22px,6vw,30px); margin-top:4px; }
   .hit .lab { position:absolute; top:100%; margin-top:6px; font-weight:900; font-size:clamp(16px,4.4vw,22px); white-space:nowrap; letter-spacing:-.01em; pointer-events:none; }
-  .hit .lock { position:absolute; width:34%; height:34%; right:-6%; top:-12%; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+  .hit .lock { position:absolute; width:30%; height:30%; right:6%; top:2%; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
   .nogl .hit { background:radial-gradient(circle at 42% 35%, #ff6a5c 0, #e3150c 38%, #b40c05 75%, #7a0603 100%); box-shadow:0 10px 18px -6px rgba(0,0,0,.45), inset 0 -6px 10px rgba(80,0,0,.45); }
   .nogl .hit.grey { background:radial-gradient(circle at 42% 35%, #ddd 0, #9a9a9a 60%, #6d6d6d 100%); }
 
@@ -192,11 +194,11 @@
 const INTRO = [
   { id:'intro', line:'', sub:'do not press.', fx:'single', headline:true },
   { line:'you pressed it.', fx:'single' },
-  { line:'are you sure?', fx:'single' },
+  { line:'are you sure?', fx:'grow' },
   { line:'like, sure sure?', fx:'nudge' },
-  { line:"what if it's locked for 3 days?", fx:'single' },
-  { line:"what if you can't get it back out?", fx:'single' },
-  { line:'what if the app just disappears?', fx:'fade' },
+  { line:"what if it's locked for 3 days?", fx:'lock' },
+  { line:"what if you can't get it back out?", sub:'catch it.', fx:'chase' },
+  { line:'what if the app just disappears?', fx:'vanish' },
   { line:'what are you even trying to do?', fx:'use4' },
   { line:'are you sure this is a real site?', sub:"make sure it's not a phishing link!", fx:'decoy3', fear:'fake site' },
   { line:'ok. how much?', fx:'split3' },
@@ -208,13 +210,13 @@ const SEQ = {
     { line:'try again?', fx:'dodge' },
     { line:'check your banking app.', fx:'pulse', fear:'check your app' },
     { line:'code expired.', fx:'grey' },
-    { line:'try a different card.', fx:'single' },
+    { line:'try a different card.', fx:'burst' },
     { line:'declined.', sub:'again.', fx:'shudder' }
   ],
   id: [
     { line:'please verify your identity.', fx:'shrink1', fear:'verify', pin:{layer:'risk', t:'verify your identity'} },
     { line:'take a photo of your passport.', fx:'single' },
-    { line:'declined.', sub:'your photo is blurry.', fx:'shudder' },
+    { line:'declined.', sub:'your photo is blurry.', fx:'blur' },
     { line:'try again?', fx:'single' },
     { line:'ok. selfie time.', fx:'single' },
     { line:'turn your head left.', fx:'left' },
@@ -225,22 +227,22 @@ const SEQ = {
     { line:'verified.', sub:'now do it again for the on-ramp.', fx:'single', fear:'verify again', pin:{layer:'risk', t:'verified twice'} }
   ],
   bank: [
-    { line:'pending.', fx:'grey', fear:'pending', pin:{layer:'rails', t:'pending for 59 days'} },
-    { line:'day 2.', fx:'grey' }, { line:'day 3.', fx:'grey' }, { line:'day 4.', fx:'grey' },
-    { line:"oh, it's the weekend.", sub:'banks are closed.', fx:'grey', fear:'weekend' },
+    { line:'pending.', sub:'day 1.', fx:'sleep', fear:'pending', pin:{layer:'rails', t:'pending for 59 days'} },
+    { line:'still pending.', sub:'day 2.', fx:'sleep' },
+    { line:"oh, it's the weekend.", sub:'banks are closed.', fx:'lock', fear:'weekend' },
     { line:'day 59.', sub:'(a bank pull can still come back for 60 days)', fx:'grey' },
-    { line:'your bank said no.', fx:'lock', fear:'bank said no', pin:{layer:'sources', t:'your bank said no'} },
-    { line:'call your bank.', fx:'lock' },
+    { line:'your bank said no.', fx:'shudder', fear:'bank said no', pin:{layer:'sources', t:'your bank said no'} },
+    { line:'call your bank.', fx:'ring' },
     { line:'your call is important to us.', fx:'pulse' },
-    { line:'your call is very important to us.', fx:'pulse' }
+    { line:'your call is very important to us.', fx:'ring' }
   ],
   crypto: [
     { line:'send USDC.', sub:'pick a network.', fx:'chain4' },
-    { line:'copy the address.', fx:'single' },
+    { line:'copy the address.', sub:'hold still.', fx:'chase' },
     { line:'check every character.', fx:'single' },
     { line:'sent.', fx:'single' },
     { line:'wrong chain.', fx:'hop1', fear:'wrong chain', pin:{layer:'convert', t:'wrong chain'} },
-    { line:'bridging…', fx:'hop2' },
+    { line:'bridging…', fx:'orbit' },
     { line:"that'll be fees.", fx:'hop3' },
     { line:'minimum deposit not met.', sub:'the fees took you under it.', fx:'dot', fear:'below minimum', pin:{layer:'convert', t:'fees ate the minimum'} }
   ]
@@ -248,10 +250,11 @@ const SEQ = {
 const ORDER = { card:['card','id','bank','crypto'], bank:['bank','id','card','crypto'], crypto:['crypto','id','card','bank'] };
 const LEAD = { card:{ line:'ok. try a card.', fx:'single' }, id:{ line:'first, a few checks.', fx:'single' }, bank:{ line:'ok. try your bank.', fx:'single' }, crypto:{ line:'ok. try crypto.', fx:'single' } };
 const OUTRO = [
-  { line:'pick a payment method.', fx:'grid', fear:'40 options', pin:{layer:'routing', t:'40 options, nothing picked for you'} },
+  { line:'pick a payment method.', sub:'tap one.', fx:'grid', fear:'40 options', pin:{layer:'routing', t:'40 options, nothing picked for you'} },
   { line:'40 options.', sub:'none of them work for you.', fx:'single' },
   { line:'terms and conditions apply.', fx:'single', text:'upside', fear:'fine print' },
   { line:'you agreed to this.', fx:'single', text:'tiny' },
+  { line:'', fx:'colors' },
   { line:"there's a better way.", fx:'single' },
   { line:"it's been here the whole time.", fx:'single', dot:true },
   { line:'look harder.', fx:'single', dot:true },
@@ -260,9 +263,16 @@ const OUTRO = [
   { line:'ok. from the top.', fx:'single', loop:true, dot:true }
 ];
 // Reasons a payment method fails, shown one per tap on the 40-button screen.
-const GRID_NOPES = ['not available in your country.', 'too expensive.', 'minimum $100.', 'maximum $50.', "that one's down.", 'coming soon.',
-  'needs a bank account.', 'card only.', '3 to 5 business days.', 'unsupported token.', 'download our app first.', 'that one is a gift card.', 'nope.', 'out of order.'];
+const GRID_NOPES = ['not in your country.', 'card only.', 'bank only.', 'minimum $100.', 'maximum $50.', 'down for maintenance.',
+  'coming soon.', 'download the app first.', '3 to 5 business days.', 'wrong token.', "that's a gift card.", 'fee shows up at checkout.',
+  'sign up to see the price.', 'account under review.', 'step 2 of 3. there are 9.', 'needs a US bank account.'];
 const GRID_TAPS = 8;
+
+const FUN_LOGO = '<svg class="funlogo" viewBox="34 22 406 120" aria-label="Fun" role="img">' +
+  ['81.334','105.89','130.448'].map(x => `<g transform="translate(${x} 81.658) scale(2.4556)"><path d="M-17.469 37.201V-37.201L17.469-18.6V18.6Z" fill="currentColor" stroke="#fff" stroke-width="5"/></g>`).join('') +
+  '<g transform="translate(267.311 81.179) scale(2.4556)"><path fill="currentColor" d="M-4.989 3.385H8.858V-2.469H-4.989V-12.6H11.505V-18.607H-11.505V18.607H-4.989Z"/></g>' +
+  '<g transform="translate(333.205 96.804) scale(2.4556)"><path fill="currentColor" d="M11.785-12.905H5.574V.28C5.574 5.065 3.691 7.356-.229 7.356C-3.691 7.356-5.574 5.421-5.574.636V-12.905H-11.785V2.825C-11.785 8.985-8.374 12.905-2.571 12.905C.789 12.905 4.047 11.276 5.574 8.883L6.033 12.243H11.785Z"/></g>' +
+  '<g transform="translate(405.711 95.052) scale(2.4556)"><path fill="currentColor" d="M-11.938 12.956H-5.727V-.585C-5.727-4.658-3.385-7.305.433-7.305C3.64-7.305 5.727-5.269 5.727-1.044V12.956H11.938V-2.52C11.938-9.036 8.68-12.956 2.367-12.956C-1.044-12.956-4.098-11.479-5.676-8.934L-6.185-12.192H-11.938Z"/></g></svg>';
 
 let STEPS = [];
 function buildSteps(method) {
@@ -361,7 +371,7 @@ gl = initGL();
 if (!gl) document.body.classList.add('nogl');
 
 function makeButton() {
-  const b = { x:0, z:0, tx:0, tz:0, s:1, ts:1, vx:0, vz:0, vs:0, pop:0, phase:Math.random() * 6.28, grey:0, tgrey:0, press:0, shake:0, label:'', lock:false, alive:true };
+  const b = { base:[.74, .02, .015], x:0, z:0, tx:0, tz:0, s:1, ts:1, vx:0, vz:0, vs:0, pop:0, phase:Math.random() * 6.28, grey:0, tgrey:0, press:0, shake:0, label:'', lock:false, alive:true };
   if (gl) {
     b.g = new THREE.Group();
     b.mat = new THREE.MeshPhysicalMaterial({ color: 0xd8130a, roughness: .32, metalness: 0, clearcoat: 1, clearcoatRoughness: .04, sheen: .15, sheenColor: new THREE.Color(0xff3322), emissive: 0x1c0000 });
@@ -382,6 +392,7 @@ function clearButtons() {
   buttons.splice(0).forEach(b => { if (b.g) scene.remove(b.g); b.el.remove(); });
 }
 function setLabel(b, t) { b.label = t; b.el.querySelector('.lab').textContent = t; }
+function setLabelHTML(b, h) { b.label = 'fun'; b.el.querySelector('.lab').innerHTML = h; }
 function setLock(b, on) {
   b.lock = on; const old = b.el.querySelector('.lock'); if (old) old.remove();
   if (on) b.el.insertAdjacentHTML('beforeend', '<svg class="lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="12" rx="2.5" fill="#1b1b1b"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#1b1b1b" stroke-width="2.6"/><circle cx="12" cy="16" r="1.8" fill="#e9e9e6"/></svg>');
@@ -389,12 +400,44 @@ function setLock(b, on) {
 
 /* ---------- layouts ---------- */
 function layout(fx) {
-  const keep = buttons.length === 1 && ['single','shudder','grey','shrink1','shrink2','dot','hop1','hop2','hop3','lock','dodge','nudge','fade','pulse','left','right','blink'].includes(fx);
+  const keep = buttons.length === 1 && ['single','shudder','grey','shrink1','shrink2','dot','hop1','hop2','hop3','lock','dodge','nudge','fade','pulse','left','right','blink','grow','chase','orbit','ring','vanish','sleep','blur'].includes(fx);
   if (!keep) { clearButtons(); }
+  if (fx === 'burst') {
+    // the card button explodes into a pile of cards, all different sizes.
+    // jittered grid so they scatter across the whole screen without piling up.
+    const cols = view.narrow ? 2 : (window.__burstCols || 4), rows = view.narrow ? 3 : 2;
+    const W = 2 * (view.halfW - 1) * (view.narrow ? 1 : (window.__burstSpread || .62)), H = 2 * view.halfH * .62;
+    const cw = W / cols, ch = H / rows, mm = view.narrow ? 1 : 1.4;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const maxT = Math.min(cw, ch * 1.3) / ((view.narrow ? 3.6 : 2.9) * mm);
+      const t = maxT * (.55 + Math.random() * .45);
+      const x = -W / 2 + (c + .5) * cw + (Math.random() - .5) * (cw - 2.7 * t * mm) * .8;
+      const z = -H / 2 + (r + .5) * ch + (Math.random() - .5) * (ch - 2 * t * mm) * .6;
+      const b = makeButton(); b.x = 0; b.z = 0; b.s = .05; b.tx = x; b.tz = z; b.ts = t; b.vx = x * 6; b.vz = z * 6; b.phase = Math.random() * 6;
+    }
+    SFX.boom();
+    return;
+  }
+  if (fx === 'colors') {
+    // a little party: four colours, four sizes, one sentence.
+    const C = [[.97, .7, .02], [.1, .34, .96], [.06, .62, .3], [.05, .05, .055]];
+    const words = ["let's", 'have', 'some', null];
+    const wide = view.halfW > 4.6;
+    const sizes = wide ? [.56, .74, .6, .95] : [.56, .72, .6, .86];
+    const pos = wide ? [[-1.5, .35], [-.5, -.45], [.5, .45], [1.55, -.25]].map(p => [p[0] * Math.min(3.4, view.halfW * .27), p[1] * view.halfH * .7])
+                     : [[-.45, -.42], [.43, -.38], [-.43, .34], [.42, .4]].map(p => [p[0] * view.halfW, p[1] * view.halfH]);
+    words.forEach((w, i) => {
+      const b = makeButton(); b.base = C[i]; b.x = 0; b.z = 0; b.s = .05; b.tx = pos[i][0]; b.tz = pos[i][1]; b.ts = sizes[i];
+      if (w) setLabel(b, w); else setLabelHTML(b, FUN_LOGO);
+      b.value = w || 'fun'; b.phase = i * 1.7; b.el.classList.add('party');
+      setTimeout(() => { b.pop = 1; SFX.pick(); }, 120 + i * 140);
+    });
+    return;
+  }
   if (fx === 'decoy3' || fx === 'split3' || fx === 'method3' || fx === 'chain3') {
     const labels = fx === 'split3' ? ['$50', '$500', '$5,000'] : fx === 'method3' ? ['card', 'bank', 'crypto'] : fx === 'chain3' ? ['ethereum', 'base', 'tron'] : ['', '', ''];
     if (fx === 'decoy3') realIdx = Math.floor(Math.random() * 3);
-    const gap = Math.min(2.6, view.halfW * 0.66);
+    const gap = view.narrow ? Math.min(2.6, view.halfW * 0.66) : Math.min(3.6, view.halfW * .3);
     [-1, 0, 1].forEach((k, i) => { const b = makeButton(); b.x = b.tx = k * gap; b.z = b.tz = 0; b.s = .2; b.ts = .62; setLabel(b, labels[i]); b.value = labels[i]; });
     return;
   }
@@ -403,7 +446,7 @@ function layout(fx) {
     const wide = view.halfW > 4.6;
     labels.forEach((t, i) => {
       const b = makeButton();
-      if (wide) { b.tx = (i - 1.5) * Math.min(2.4, view.halfW * .5); b.tz = 0; }
+      if (wide) { b.tx = (i - 1.5) * Math.min(4.2, view.halfW * .32); b.tz = 0; }
       else { b.tx = (i % 2 ? 1 : -1) * view.halfW * .42; b.tz = (i < 2 ? -1 : 1) * view.halfH * .32; }
       b.x = 0; b.z = 0; b.s = .2; b.ts = wide ? .58 : .5; setLabel(b, t); b.value = t;
     });
@@ -420,6 +463,21 @@ function layout(fx) {
   }
   let b = buttons[0] || makeButton();
   if (!keep) { b.x = b.tx = 0; b.z = b.tz = 0; b.s = .3; }
+  b.wander = fx === 'chase'; b.orbit = fx === 'orbit'; b.ring = fx === 'ring'; b.wNext = 0; b.base = [.74, .02, .015];
+  wrap.style.filter = fx === 'blur' ? 'blur(7px)' : '';
+  if (fx === 'grow') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? 1.22 : 1.4; }
+  if (fx === 'chase' || fx === 'orbit') b.ts = view.narrow ? .5 : .75;
+  if (fx === 'ring') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? .75 : 1; }
+  if (fx === 'blur') { b.tx = 0; b.tz = 0; b.ts = view.narrow ? .8 : 1; b.shake = 1; SFX.declined(); }
+
+  if (fx === 'vanish') {
+    b.ts = .001;
+    setTimeout(() => {
+      if (STEPS[step].fx !== 'vanish') return;
+      b.tx = (Math.random() < .5 ? -1 : 1) * view.halfW * (.3 + Math.random() * .2); b.tz = (Math.random() * 2 - 1) * view.halfH * .2;
+      b.x = b.tx; b.z = b.tz; b.vx = b.vz = 0; b.ts = view.narrow ? .55 : .75; b.pop = 1;
+    }, 900);
+  }
   b.tgrey = fx === 'grey' ? 1 : 0;
   setLock(b, fx === 'lock');
   if (['single','shudder','grey','lock','dodge','nudge','fade','pulse','blink'].includes(fx)) { b.tx = 0; b.tz = 0; b.ts = 1; }
@@ -430,6 +488,7 @@ function layout(fx) {
     b.tx = nx; b.tz = (Math.random() * 2 - 1) * rz; b.ts = view.narrow ? .62 + Math.random() * .3 : .8 + Math.random() * .3;
   }
   if (fx === 'grey' || fx === 'lock') b.ts = view.narrow ? .8 : 1;
+  if (fx === 'sleep') { b.tx = 0; b.tz = view.halfH * .1; b.ts = view.narrow ? .62 : .8; b.tgrey = .6; b.sleepy = true; } else b.sleepy = false;
   if (fx === 'shrink1') b.ts = .62;
   if (fx === 'shrink2') b.ts = .34;
   if (fx === 'dot') b.ts = .08;
@@ -451,7 +510,7 @@ function resize() {
   view.halfH = 4.2; view.halfW = view.halfH * aspect;
   if (view.halfW < 3.1) { view.halfW = 3.1; view.halfH = view.halfW / aspect; }
   view.narrow = w < 640;
-  view.big = view.narrow ? 2.0 : 1.12;
+  view.big = view.narrow ? 2.0 : 1.6;
   if (gl) {
     renderer.setSize(w, h, false);
     camera.left = -view.halfW; camera.right = view.halfW; camera.top = view.halfH; camera.bottom = -view.halfH; camera.updateProjectionMatrix();
@@ -471,7 +530,14 @@ function frame(now) {
   const k = 1 - Math.pow(.0009, dt);
   const solo = buttons.length === 1;
   for (const b of buttons) {
-    const m = solo ? view.big : (view.narrow && buttons.length === 4 ? 1.15 : 1);
+    const m = solo ? view.big : buttons.length > 12 ? 1 : view.narrow ? (buttons.length === 4 ? 1.15 : 1) : 1.4;
+    if (b.wander && now > b.wNext) {
+      const L = Math.max(0, view.halfW - 1.6 * b.ts * m), LZ = Math.max(0, view.halfH * .55 - .9 * b.ts * m);
+      b.tx = (Math.random() * 2 - 1) * L; b.tz = (Math.random() * 2 - 1) * LZ; b.wNext = now + 620 + Math.random() * 300;
+    }
+    if (b.orbit) { const R = Math.min(view.halfW * .55, 4), a = now / 520; b.tx = Math.cos(a) * R; b.tz = Math.sin(a) * view.halfH * .28; }
+    if (b.sleepy) b.tz = view.halfH * .1 + Math.sin(now / 1400) * .25;
+    if (b.ring && Math.sin(now / 160) > .2) b.shake = Math.max(b.shake, .4);
     const clamp = buttons.length <= 4;
     const lim = Math.max(0, view.halfW - 1.6 * b.ts * m), limZ = Math.max(0, view.halfH * .62 - .9 * b.ts * m);
     if (clamp) { b.tx = Math.max(-lim, Math.min(lim, b.tx)); b.tz = Math.max(-limZ, Math.min(limZ, b.tz)); }
@@ -491,7 +557,9 @@ function frame(now) {
       b.g.position.set(b.x + sx, 0, b.z + Math.sin(now / 700 + b.phase) * .05);
       b.g.rotation.z = Math.sin(now / 900 + b.phase) * .03 + sx * .15; b.g.scale.setScalar(Math.max(.001, es));
       b.cap.position.y = pressY;
-      b.mat.color.setRGB(.74 - .2 * b.grey, .02 + .52 * b.grey, .015 + .53 * b.grey, THREE.SRGBColorSpace);
+      const g = b.grey, c = b.base;
+      b.mat.color.setRGB(c[0] + (.54 - c[0]) * g, c[1] + (.54 - c[1]) * g, c[2] + (.545 - c[2]) * g, THREE.SRGBColorSpace);
+      if (b.tint !== c) { b.tint = c; b.mat.emissive.setRGB(c[0] * .04, c[1] * .04, c[2] * .04); b.mat.sheenColor.setRGB(Math.min(1, c[0] + .2), Math.min(1, c[1] + .2), Math.min(1, c[2] + .2)); }
       b.mat.roughness = .32 + .2 * b.grey;
     }
     const [cx, cy] = project(b.x + sx, .35 * es, b.z);
@@ -609,7 +677,9 @@ function onPress(b) {
   if (presses === 1) track('game_start');
   b.press = 1; b.pop = 1;
   const S = STEPS[step];
-  if (['split3','method3','use4','chain4'].includes(S.fx)) SFX.pick(); else SFX.press(presses);
+  if (['split3','method3','use4','chain4','colors'].includes(S.fx)) SFX.pick(); else SFX.press(presses);
+  if (S.fx === 'colors') { buttons.forEach(o => { if (o !== b) { o.ts = .001; } }); b.ts *= 1.3; waiting = true; setTimeout(() => { waiting = false; next(); }, 450); return; }
+  if (S.fx === 'burst') { b.ts = .001; }
   if (S.fx === 'split3') { amount = b.value; track('pick_amount', { amount: b.value }); }
   if (S.fx === 'method3') { method = b.value; buildSteps(method); track('pick_method', { method: b.value }); }
   if (S.fx === 'use4') { useCase = b.value; track('pick_use', { use: b.value }); }
@@ -630,7 +700,8 @@ function onPress(b) {
     if (gridTaps < GRID_TAPS) {
       b.tgrey = 1; b.shake = .6; setTimeout(SFX.nope, 60);
       lineEl.textContent = nopes[(gridTaps - 1) % nopes.length];
-      subEl.textContent = `${40 - gridTaps} left.`;
+      subEl.textContent = `${40 - gridTaps} to go.`;
+      buttons.forEach(o => { if (o !== b) o.shake = Math.max(o.shake, .22); });
       return;
     }
   }
